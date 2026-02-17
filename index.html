@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomo | Galaxy CRM</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Configuração de Cores -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        nomo: {
+                            base: '#05030a',
+                            surface: '#110c1d',
+                            accent: '#a855f7',
+                            cyan: '#06b6d4',
+                            silver: '#e2e8f0',
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 10px rgba(168, 85, 247, 0.3), 0 0 20px rgba(168, 85, 247, 0.1)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                    },
+                    animation: {
+                        'fade-out': 'fadeOut 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeOut: {
+                            '0%': { opacity: '1' },
+                            '100%': { opacity: '0', visibility: 'hidden' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #05030a;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 20%);
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #332452; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
+        
+        .glass {
+            background: rgba(17, 12, 29, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel {
+            background: rgba(30, 20, 54, 0.4);
+            border: 1px solid rgba(168, 85, 247, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Botões de Seleção */
+        .select-chip {
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .select-chip:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+        .select-chip.active {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: #a855f7;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .bar-fill { transition: width 1s ease-out; }
+
+        /* Loader */
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="text-nomo-silver font-sans h-screen flex overflow-hidden selection:bg-nomo-accent selection:text-white">
+
+    <div id="app" class="flex w-full h-full" v-cloak>
+        
+        <!-- LOADING SCREEN -->
+        <div v-if="showLoader" class="loader-overlay" :class="{'animate-fade-out': startFadeOut}">
+            <video src="loading.mp4" autoplay muted playsinline class="w-full h-full object-cover"></video>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-20 lg:w-64 bg-nomo-surface border-r border-white/5 flex flex-col justify-between z-20 shadow-2xl transition-all">
+            <div>
+                <!-- Logo -->
+                <div class="h-32 flex items-center justify-center border-b border-white/5 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-b from-nomo-accent/10 to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                    
+                    <!-- Container da Logo Aumentada -->
+                    <div class="relative w-20 h-20 flex items-center justify-center transition-transform transform group-hover:scale-110 duration-500">
+                        <!-- Glow Effect -->
+                        <div class="absolute inset-0 bg-nomo-accent blur-2xl opacity-40 rounded-full animate-pulse-slow"></div>
+                        <!-- Logo Image -->
+                        <img src="logo.png" alt="Nomo Logo" class="relative w-full h-full object-contain drop-shadow-2xl z-10">
+                    </div>
+                </div>
+
+                <!-- Nav Links -->
+                <nav class="mt-8 px-3 space-y-2">
+                    
+                    <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços de Trabalho</div>
+
+                    <!-- GERAL -->
+                    <button @click="currentView = 'geral'" 
+                        class="w-full flex items-center px-3 py-3 rounded-xl border transition-all group"
+                        :class="currentView === 'geral' ? 'bg-nomo-accent/10 text-nomo-accent border-nomo-accent/20' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                        <i class="ph ph-squares-four text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Visão Geral</span>
+                    </button>
+
+                    <!-- ESPAÇO DEV -->
+                    <button @click="currentView = 'dev'" 
+                        class="w-full flex items-center px-3 py-3 rounded-xl border transition-all group"
+                        :class="currentView === 'dev' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                        <i class="ph ph-laptop text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Espaço Dev</span>
+                    </button>
+
+                    <!-- ESPAÇO EDITOR -->
+                    <button @click="currentView = 'editor'" 
+                        class="w-full flex items-center px-3 py-3 rounded-xl border transition-all group"
+                        :class="currentView === 'editor' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                        <i class="ph ph-film-strip text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Espaço Editor</span>
+                    </button>
+
+                     <!-- ENVIAR VÍDEOS (NOVO) -->
+                     <button @click="currentView = 'enviar'" 
+                        class="w-full flex items-center px-3 py-3 rounded-xl border transition-all group"
+                        :class="currentView === 'enviar' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                        <i class="ph ph-paper-plane-right text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Enviar Vídeos</span>
+                    </button>
+
+                    <!-- CONCLUÍDOS -->
+                    <button @click="currentView = 'concluidos'" 
+                        class="w-full flex items-center px-3 py-3 rounded-xl border transition-all group"
+                        :class="currentView === 'concluidos' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                        <i class="ph ph-check-circle text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Concluídos</span>
+                    </button>
+
+                    <div class="pt-4 pb-2">
+                        <div class="h-px bg-white/5 mx-2"></div>
+                    </div>
+
+                    <!-- ANALYTICS -->
+                    <button @click="currentView = 'analytics'"
+                        class="w-full flex items-center px-3 py-3 rounded-xl border transition-all group"
+                        :class="currentView === 'analytics' ? 'bg-nomo-cyan/10 text-nomo-cyan border-nomo-cyan/20' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                        <i class="ph ph-chart-bar text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Analytics</span>
+                    </button>
+
+                    <!-- Ferramentas -->
+                    <a href="editsite.html" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-xl transition-all group border border-transparent hover:border-orange-500/20 mt-4">
+                        <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Editor Site</span>
+                    </a>
+
+                    <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-green-400 hover:bg-green-500/10 rounded-xl transition-all group border border-transparent hover:border-green-500/20">
+                        <i class="ph ph-google-drive-logo text-xl"></i>
+                        <span class="hidden lg:block ml-3 font-medium">Drive Prévias</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User -->
+            <div class="p-4 border-t border-white/5 bg-black/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-nomo-cyan to-blue-600 p-[1px]">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=000&color=fff" class="rounded-full w-full h-full">
+                    </div>
+                    <div class="hidden lg:block">
+                        <p class="text-xs font-bold text-white">Administrador</p>
+                        <p class="text-[10px] text-nomo-cyan">Nomo Headquarters</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col relative min-w-0 bg-nomo-base/90">
+            
+            <!-- CRM / DEV / EDITOR VIEW -->
+            <div v-if="currentView !== 'analytics'" class="flex flex-col h-full">
+                <!-- Header -->
+                <header class="h-20 glass sticky top-0 z-10 flex items-center justify-between px-8">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-xl font-display font-bold text-white uppercase tracking-wider">
+                            <span v-if="currentView === 'geral'">Visão Geral</span>
+                            <span v-if="currentView === 'dev'" class="text-blue-400">Espaço Dev</span>
+                            <span v-if="currentView === 'editor'" class="text-purple-400">Espaço Editor</span>
+                            <span v-if="currentView === 'enviar'" class="text-indigo-400">Sala de Envios</span>
+                            <span v-if="currentView === 'concluidos'" class="text-green-400">Trabalhos Concluídos</span>
+                        </h2>
+                    </div>
+
+                    <div class="flex items-center w-full max-w-md bg-black/30 border border-white/10 rounded-full px-5 py-2.5 focus-within:border-nomo-accent/50 focus-within:shadow-neon transition-all mx-4">
+                        <i class="ph ph-magnifying-glass text-nomo-accent text-lg"></i>
+                        <input type="text" v-model="search" placeholder="Buscar..." 
+                               class="bg-transparent border-none outline-none text-sm ml-3 w-full text-white placeholder-slate-500">
+                    </div>
+
+                    <button @click="fetchData" class="group relative p-3 rounded-full hover:bg-white/5 transition-all">
+                        <i class="ph ph-arrows-clockwise text-xl text-slate-400 group-hover:text-nomo-cyan" :class="{'animate-spin': loading}"></i>
+                    </button>
+                </header>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-auto p-8 scroll-smooth">
+                    
+                    <!-- KPI Cards (Adaptativo ao Espaço) -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+                            <p class="text-xs font-bold text-slate-400 uppercase mb-1">Leads na Tela</p>
+                            <h3 class="font-display text-3xl font-bold text-white">{{ filteredLeads.length }}</h3>
+                        </div>
+                        
+                        <!-- Cards Específicos -->
+                        <div v-if="currentView === 'dev' || currentView === 'geral'" class="glass-panel p-5 rounded-2xl relative overflow-hidden border-blue-500/20">
+                            <p class="text-xs font-bold text-blue-400 uppercase mb-1">Websites Pendentes</p>
+                            <h3 class="font-display text-3xl font-bold text-white">{{ stats.devPending }}</h3>
+                        </div>
+
+                        <div v-if="currentView === 'editor' || currentView === 'geral'" class="glass-panel p-5 rounded-2xl relative overflow-hidden border-purple-500/20">
+                            <p class="text-xs font-bold text-purple-400 uppercase mb-1">Vídeos Pendentes</p>
+                            <h3 class="font-display text-3xl font-bold text-white">{{ stats.videoPending }}</h3>
+                        </div>
+
+                        <div v-if="currentView === 'enviar' || currentView === 'geral'" class="glass-panel p-5 rounded-2xl relative overflow-hidden border-indigo-500/20">
+                            <p class="text-xs font-bold text-indigo-400 uppercase mb-1">Prontos p/ Enviar</p>
+                            <h3 class="font-display text-3xl font-bold text-white">{{ stats.readyToSend }}</h3>
+                        </div>
+
+                        <div class="glass-panel p-5 rounded-2xl relative overflow-hidden border-green-500/20">
+                            <p class="text-xs font-bold text-green-400 uppercase mb-1">Total Concluídos</p>
+                            <h3 class="font-display text-3xl font-bold text-white">{{ stats.closed }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Tabela -->
+                    <div class="glass rounded-2xl overflow-hidden flex flex-col min-h-[500px]">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-black/40 border-b border-white/5">
+                                    <tr>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Empresa</th>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Funil WhatsApp & Progresso</th>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Trabalho</th>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Local</th>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5">
+                                    <tr v-if="loading" v-for="n in 5" :key="n" class="animate-pulse">
+                                        <td class="px-6 py-4"><div class="h-4 w-32 bg-white/5 rounded"></div></td>
+                                        <td class="px-6 py-4"><div class="h-6 w-24 bg-white/5 rounded-full"></div></td>
+                                        <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
+                                        <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
+                                        <td class="px-6 py-4"></td>
+                                    </tr>
+                                    <tr v-else v-for="lead in filteredLeads" :key="lead._row" @click="openDrawer(lead)" class="group hover:bg-nomo-accent/5 cursor-pointer transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="w-10 h-10 rounded-lg bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                    <img v-if="lead.img && lead.img.startsWith('http')" :src="lead.img" class="w-full h-full object-cover">
+                                                    <span v-else class="text-xs font-bold text-nomo-accent">{{ lead['NOME EMPRESA']?.charAt(0) || 'N' }}</span>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-semibold text-white">{{ lead['NOME EMPRESA'] }}</div>
+                                                    <div class="text-[10px] text-slate-500 uppercase">{{ lead['DATA'] }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Funil & Progresso -->
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-col gap-2">
+                                                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border w-fit" :class="getStatusStyle(lead['STATUS WHATSAPP'])">
+                                                    {{ lead['STATUS WHATSAPP'] || 'A Contactar' }}
+                                                </div>
+                                                <!-- Barra de Progresso -->
+                                                <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                    <div class="h-full rounded-full transition-all duration-1000"
+                                                         :class="getProgressColor(lead['STATUS WHATSAPP'])"
+                                                         :style="{ width: getProgress(lead['STATUS WHATSAPP']) + '%' }">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2 text-sm text-slate-300">
+                                                <span class="w-2 h-2 rounded-full" :class="getDevStatusColor(lead['STATUS DEV'])"></span>
+                                                {{ lead['STATUS DEV'] || 'Pendente' }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-slate-400">{{ lead['LOCAL'] || '-' }}</td>
+                                        <td class="px-6 py-4 text-right flex items-center justify-end h-full">
+                                            <!-- Botão de Enviar Inteligente -->
+                                            <a v-if="currentView === 'enviar' && getWhatsappLink(lead)"
+                                               :href="getWhatsappLink(lead)" target="_blank" @click.stop
+                                               class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20">
+                                               <i class="ph ph-whatsapp-logo text-lg"></i> Enviar Agora
+                                            </a>
+                                            <i class="ph ph-caret-right text-slate-600 group-hover:text-white"></i>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!-- Empty State -->
+                            <div v-if="!loading && filteredLeads.length === 0" class="p-8 text-center text-slate-500">
+                                <i class="ph ph-check-circle text-4xl mb-2 opacity-50"></i>
+                                <p>Tudo limpo neste espaço!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS VIEW -->
+            <div v-else class="flex flex-col h-full bg-nomo-base overflow-auto">
+                <header class="h-20 border-b border-white/5 flex items-center px-8 bg-black/20">
+                    <h2 class="font-display text-2xl font-bold text-white">Analytics <span class="text-nomo-cyan">Dashboard</span></h2>
+                </header>
+
+                <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Funil de Vendas Chart -->
+                    <div class="glass p-6 rounded-2xl">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2">
+                            <i class="ph ph-funnel text-lg text-nomo-accent"></i> Funil de Conversão
+                        </h3>
+                        <div class="space-y-4">
+                            <div v-for="(count, status) in analytics.funnel" :key="status" class="relative">
+                                <div class="flex justify-between text-xs text-slate-300 mb-1">
+                                    <span>{{ status }}</span>
+                                    <span class="font-bold">{{ count }}</span>
+                                </div>
+                                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-nomo-accent to-nomo-cyan bar-fill" :style="{width: (count / stats.total * 100) + '%'}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status de Desenvolvimento -->
+                    <div class="glass p-6 rounded-2xl">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2">
+                            <i class="ph ph-code text-lg text-green-400"></i> Produção & Editoria
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                             <div v-for="(count, status) in analytics.dev" :key="status" class="bg-white/5 p-4 rounded-xl border border-white/5">
+                                <div class="text-2xl font-display font-bold text-white">{{ count }}</div>
+                                <div class="text-xs text-slate-400 uppercase mt-1">{{ status }}</div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- DRAWER DE EDIÇÃO -->
+        <transition name="slide-in">
+            <div v-if="selectedLead" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
+                
+                <!-- Drawer Header -->
+                <div class="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-xl">
+                    <div>
+                        <h2 class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                            <span class="text-nomo-accent">#</span> {{ selectedLead['NOME EMPRESA'] }}
+                        </h2>
+                        <div class="flex gap-2 mt-1">
+                             <span class="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded border border-white/20 uppercase">{{ currentView }}</span>
+                        </div>
+                    </div>
+                    <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all">
+                        <i class="ph ph-x text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Drawer Content -->
+                <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                    
+                    <!-- 1. Funil WhatsApp (Sempre visível para todos para contexto) -->
+                    <section>
+                        <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <i class="ph ph-whatsapp-logo text-lg"></i> Funil WhatsApp
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            <!-- Correção: Usando o valor exato para o :class -->
+                            <button v-for="opt in funnelOptions" :key="opt" 
+                                @click="selectedLead['STATUS WHATSAPP'] = opt"
+                                class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate flex items-center gap-2"
+                                :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-white/5 text-slate-400'">
+                                <span>{{ opt }}</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- ÁREA DE PRODUÇÃO (DIVIDIDA VISUALMENTE) -->
+                    <div class="grid grid-cols-1 gap-6">
+                        
+                        <!-- Lado A: SITE (Dev) - Visível em Geral e Dev -->
+                        <section v-if="currentView === 'geral' || currentView === 'dev'" class="bg-blue-500/5 p-4 rounded-xl border border-blue-500/10">
+                            <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i class="ph ph-laptop text-lg"></i> Desenvolvimento Site
+                            </h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button v-for="opt in siteOptions" :key="opt" 
+                                    @click="selectedLead['STATUS DEV'] = opt"
+                                    class="select-chip px-3 py-2 rounded-lg text-xs font-medium"
+                                    :class="selectedLead['STATUS DEV'] === opt ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-white/5 text-slate-400'">
+                                    {{ opt }}
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- Lado B: EDITOR (Vídeo) - Visível em Geral, Editor e Envios -->
+                        <section v-if="currentView === 'geral' || currentView === 'editor' || currentView === 'enviar'" class="bg-purple-500/5 p-4 rounded-xl border border-purple-500/10">
+                            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i class="ph ph-film-strip text-lg"></i> Editor de Vídeo / Prévias
+                            </h3>
+                            
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <button v-for="opt in videoOptions" :key="opt" 
+                                    @click="selectedLead['STATUS DEV'] = opt"
+                                    class="select-chip px-3 py-2 rounded-lg text-xs font-medium"
+                                    :class="selectedLead['STATUS DEV'] === opt ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-white/5 text-slate-400'">
+                                    {{ opt }}
+                                </button>
+                            </div>
+
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="ph ph-google-drive-logo text-slate-500 group-focus-within:text-purple-400"></i>
+                                </div>
+                                <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" 
+                                       placeholder="Cole o link do Drive da prévia aqui..."
+                                       class="w-full pl-10 bg-black/40 border border-white/10 rounded-lg py-2.5 text-sm text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all">
+                                <a v-if="selectedLead['LINK VÍDEO PRÉVIA']" :href="selectedLead['LINK VÍDEO PRÉVIA']" target="_blank"
+                                   class="absolute right-2 top-2 p-1 bg-purple-500/20 rounded hover:bg-purple-500 text-purple-300 hover:text-white transition-colors">
+                                    <i class="ph ph-arrow-square-out"></i>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Dados Cadastrais e Prioridade -->
+                    <section class="space-y-4 pt-4 border-t border-white/5">
+                        <div class="grid grid-cols-2 gap-4">
+                             <div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Prioridade</label>
+                                <select v-model="selectedLead['PRIORIDADE (DEV)']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-nomo-accent outline-none">
+                                    <option v-for="opt in priorityOptions" :key="opt" :value="opt">{{ opt }}</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Status Ligação</label>
+                                <select v-model="selectedLead['STATUS LIGAÇÃO']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-nomo-accent outline-none">
+                                    <option v-for="opt in callOptions" :key="opt" :value="opt">{{ opt }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Telefone</label>
+                                <input v-model="selectedLead['TEL. NUMÉRICO']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-nomo-accent outline-none">
+                            </div>
+                            
+                            <!-- GOOGLE MAPS (NOVO) -->
+                            <div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Google Maps</label>
+                                <div class="flex gap-2">
+                                    <input v-model="selectedLead['LINK MAPS']" type="text" placeholder="Cole o link do Maps..."
+                                           class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-nomo-accent outline-none">
+                                    <a v-if="selectedLead['LINK MAPS']" :href="selectedLead['LINK MAPS']" target="_blank" 
+                                       class="flex-shrink-0 w-10 h-9 flex items-center justify-center bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/30 hover:bg-blue-500 hover:text-white transition-all">
+                                        <i class="ph ph-map-pin text-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- WHATSAPP (NOVO BOTÃO INTELIGENTE) -->
+                            <div class="md:col-span-2">
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Link WhatsApp</label>
+                                <div class="flex gap-2">
+                                    <input v-model="selectedLead['LINK WHATSAPP']" type="text" placeholder="https://wa.me/..."
+                                           class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-nomo-accent outline-none">
+                                    
+                                    <!-- Botão Inteligente que usa getWhatsappLink -->
+                                    <a v-if="getWhatsappLink(selectedLead)" :href="getWhatsappLink(selectedLead)" target="_blank" 
+                                       class="flex-shrink-0 px-4 h-9 flex items-center gap-2 bg-green-500/20 text-green-400 rounded-lg border border-green-500/30 hover:bg-green-500 hover:text-white transition-all font-bold text-xs">
+                                        <i class="ph ph-whatsapp-logo text-lg"></i> Abrir WhatsApp
+                                    </a>
+                                    <button v-else disabled class="flex-shrink-0 px-4 h-9 flex items-center gap-2 bg-slate-500/10 text-slate-500 rounded-lg border border-slate-500/20 cursor-not-allowed text-xs">
+                                        <i class="ph ph-prohibit"></i> Sem Link
+                                    </button>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1 italic" v-if="!selectedLead['LINK WHATSAPP'] || !selectedLead['LINK WHATSAPP'].startsWith('http')">
+                                    * Usando link gerado pelo telefone se necessário
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Observações</label>
+                            <textarea v-model="selectedLead['OBSERVAÇÕES']" rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-nomo-accent outline-none"></textarea>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+                    <button @click="saveLead" :disabled="saving" class="w-full py-4 bg-gradient-to-r from-nomo-accent to-purple-700 hover:from-purple-500 hover:to-nomo-accent text-white rounded-xl font-bold shadow-neon transform transition hover:scale-[1.02] active:scale-[0.98] flex justify-center items-center gap-2 disabled:opacity-50">
+                        <i v-if="saving" class="ph ph-spinner animate-spin text-xl"></i>
+                        <span v-else class="tracking-widest uppercase text-sm">Salvar Alterações</span>
+                    </button>
+                </div>
+            </div>
+        </transition>
+
+        <!-- Toast -->
+        <div v-if="toast.show" class="fixed bottom-8 right-8 z-50 animate-slide-in">
+            <div class="glass px-6 py-4 rounded-xl shadow-2xl border-l-4 flex items-center gap-4" :class="toast.type === 'success' ? 'border-green-500' : 'border-red-500'">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="toast.type === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'">
+                    <i class="ph-fill text-lg" :class="toast.type === 'success' ? 'ph-check-circle' : 'ph-warning-circle'"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-white">{{ toast.title }}</h4>
+                    <p class="text-xs text-slate-400">{{ toast.message }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="selectedLead" @click="closeDrawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"></div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        const SCRIPT_ID = "AKfycbxI-MIADHcm2uDCmCm0N7JnrpNIgUF0q_9HGmxnA-y9mQyy4q11by36NB-2_nH9olvYfA";
+        const API_URL = `https://script.google.com/macros/s/${SCRIPT_ID}/exec`;
+
+        createApp({
+            data() {
+                return {
+                    currentView: 'geral', // geral, dev, editor, concluidos, analytics, enviar
+                    leads: [],
+                    search: '',
+                    loading: true,
+                    saving: false,
+                    selectedLead: null,
+                    
+                    // Loading Screen
+                    showLoader: true,
+                    startFadeOut: false,
+
+                    toast: { show: false, title: '', message: '', type: 'success' },
+                    
+                    funnelOptions: [
+                        "A Contactar", "📞 Mensagem enviada", "❌ WP Inválido", "📩 Vídeo Enviado",
+                        "💬 Em Negociação", "👀 Remarketing 1", "👻 Remarketing 2", "❄️ Vácuo Eterno", "💰 FECHADO (Venda)"
+                    ],
+                    callOptions: [
+                        "A Ligar", "📞 Secretária (Encaminhar)", "📠 Dono (Aceitou)", "🚫 Dono (Recusou)", "📫 Caixa Postal", "❌ Número Inválido"
+                    ],
+                    priorityOptions: ["Normal", "🔥 ALTA (Dono quer)", "⚡ ALTA (Secretária)", "Baixa"],
+                    
+                    siteOptions: ["Pendente", "Em Produção", "Site Pronto✔️🤠", "Não Necessário"],
+                    videoOptions: ["A Gravar (Prévia)", "Editando (Prévia)", "✅ Vídeo Pronto"],
+
+                    columns: [
+                        'img', 'DATA', 'NOME EMPRESA', 'QTD AVALIAÇÕES', 'LINK MAPS', 'TEL. NUMÉRICO', 
+                        'OBSERVAÇÕES', 'validação whatsapp', 'ANÁLISE SITE', 'LINK WHATSAPP', 
+                        'STATUS WHATSAPP', 'STATUS LIGAÇÃO', 'PRIORIDADE (DEV)', 'STATUS DEV', 
+                        'LINK VÍDEO PRÉVIA', 'WEBSITE ATUAL', 'DUPLICADO?', 'LOCAL'
+                    ]
+                }
+            },
+            computed: {
+                filteredLeads() {
+                    let items = this.leads;
+
+                    // Filtro de Busca Global
+                    if (this.search) {
+                        const term = this.search.toLowerCase();
+                        items = items.filter(l => 
+                            (l['NOME EMPRESA'] && l['NOME EMPRESA'].toLowerCase().includes(term)) ||
+                            (l['LOCAL'] && l['LOCAL'].toLowerCase().includes(term)) ||
+                            (l['STATUS WHATSAPP'] && l['STATUS WHATSAPP'].toLowerCase().includes(term))
+                        );
+                    }
+
+                    // Verifica se está concluído (Vídeo Enviado ou Fechado)
+                    const isCompleted = (l) => {
+                        const wpp = l['STATUS WHATSAPP'] || '';
+                        return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO');
+                    };
+
+                    // FILTRO POR ALA (ESPAÇO)
+                    if (this.currentView === 'concluidos') {
+                        return items.filter(l => isCompleted(l));
+                    }
+
+                    if (this.currentView === 'dev') {
+                        return items.filter(l => {
+                            if (isCompleted(l)) return false; // Remove se já acabou
+                            const status = l['STATUS DEV'] || 'Pendente';
+                            return !status.includes('Site Pronto') && !status.includes('Não Necessário');
+                        });
+                    }
+
+                    if (this.currentView === 'editor') {
+                        return items.filter(l => {
+                            if (isCompleted(l)) return false; // Remove se já acabou (Video Enviado ou Fechado)
+                            
+                            const dev = l['STATUS DEV'] || '';
+                            
+                            // Lógica solicitada: Só aparece se o site estiver pronto (ou se o trabalho de vídeo já começou)
+                            // Ou seja, deve incluir 'Site Pronto', 'Gravar' ou 'Editando'.
+                            // E não deve ter 'Vídeo Pronto' (pois aí vai pra envios).
+                            
+                            const isReadyForEditor = dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando');
+                            const isVideoFinished = dev.includes('Vídeo Pronto');
+                            
+                            return isReadyForEditor && !isVideoFinished;
+                        });
+                    }
+                    
+                    // NOVA ALA: SALA DE ENVIOS
+                    if (this.currentView === 'enviar') {
+                        return items.filter(l => {
+                            if (isCompleted(l)) return false; // Se já enviou ou fechou, não mostra
+                            
+                            const dev = l['STATUS DEV'] || '';
+                            const wpp = l['STATUS WHATSAPP'] || '';
+                            
+                            // Regra: Video Pronto no Dev E ainda não enviado no WhatsApp
+                            return dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado');
+                        });
+                    }
+
+                    // Geral mostra tudo
+                    return items;
+                },
+                stats() {
+                    const total = this.leads.length;
+                    
+                    // Concluídos (Vídeo Enviado ou Fechado)
+                    const closed = this.leads.filter(l => {
+                        const wpp = l['STATUS WHATSAPP'] || '';
+                        return wpp.includes('FECHADO') || wpp.includes('Vídeo Enviado');
+                    }).length;
+                    
+                    // Stats Específicas (Exclui concluídos)
+                    const isCompleted = (l) => {
+                        const wpp = l['STATUS WHATSAPP'] || '';
+                        return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO');
+                    };
+
+                    const devPending = this.leads.filter(l => {
+                         if (isCompleted(l)) return false;
+                         const s = l['STATUS DEV'] || '';
+                         return !s.includes('Site Pronto') && !s.includes('Não Necessário'); 
+                    }).length;
+
+                    const videoPending = this.leads.filter(l => {
+                        if (isCompleted(l)) return false;
+                        const dev = l['STATUS DEV'] || '';
+                        // Mesma lógica do filtro visual para manter coerência nos números
+                        const isReadyForEditor = dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando');
+                        return isReadyForEditor && !dev.includes('Vídeo Pronto');
+                    }).length;
+
+                     const readyToSend = this.leads.filter(l => {
+                        if (isCompleted(l)) return false;
+                        const dev = l['STATUS DEV'] || '';
+                        return dev.includes('Vídeo Pronto');
+                    }).length;
+
+                    return { total, devPending, videoPending, closed, readyToSend };
+                },
+                analytics() {
+                    const funnel = {};
+                    const dev = {};
+                    this.leads.forEach(l => {
+                        const s = l['STATUS WHATSAPP'] || 'Outros';
+                        funnel[s] = (funnel[s] || 0) + 1;
+                        const d = l['STATUS DEV'] || 'Pendente';
+                        dev[d] = (dev[d] || 0) + 1;
+                    });
+                    return { funnel, dev };
+                }
+            },
+            methods: {
+                async fetchData() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch(API_URL);
+                        const data = await response.json();
+                        this.leads = data;
+                    } catch (error) {
+                        this.showToast("Erro", "Falha ao carregar dados.", "error");
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                openDrawer(lead) {
+                    this.selectedLead = JSON.parse(JSON.stringify(lead));
+                },
+                closeDrawer() {
+                    this.selectedLead = null;
+                },
+                async saveLead() {
+                    this.saving = true;
+                    try {
+                        const rowData = this.columns.map(col => this.selectedLead[col] || "");
+                        await fetch(API_URL, {
+                            method: 'POST',
+                            mode: 'no-cors', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: "update", row: this.selectedLead._row, data: rowData })
+                        });
+                        const index = this.leads.findIndex(l => l._row === this.selectedLead._row);
+                        if (index !== -1) this.leads[index] = { ...this.selectedLead };
+                        this.showToast("Salvo", "Dados atualizados com sucesso.", "success");
+                        this.closeDrawer();
+                    } catch (error) {
+                        this.showToast("Erro", "Não foi possível salvar.", "error");
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+                getStatusStyle(status) {
+                    if (!status) return 'bg-white/5 text-slate-400 border-white/10';
+                    const s = status.toLowerCase();
+                    if (s.includes('fechado')) return 'bg-green-500/20 text-green-400 border-green-500/30';
+                    if (s.includes('vácuo') || s.includes('inválido')) return 'bg-slate-700/30 text-slate-500 border-slate-600';
+                    if (s.includes('negociação')) return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                    if (s.includes('vídeo enviado')) return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+                    if (s.includes('mensagem')) return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+                    return 'bg-white/5 text-slate-400 border-white/10';
+                },
+                getDevStatusColor(status) {
+                    if (!status) return 'bg-slate-600';
+                    if (status.includes('Vídeo') || status.includes('Editando') || status.includes('Gravar')) return 'bg-purple-500';
+                    if (status.includes('Pronto') || status.includes('Site')) return 'bg-green-500';
+                    return 'bg-blue-500';
+                },
+                
+                // --- NOVA FUNÇÃO INTELIGENTE DE LINK ---
+                getWhatsappLink(lead) {
+                    const rawLink = lead['LINK WHATSAPP'];
+                    const phone = lead['TEL. NUMÉRICO'];
+
+                    // 1. Se já for um link válido, usa ele
+                    if (rawLink && (rawLink.startsWith('http') || rawLink.startsWith('wa.me'))) {
+                        return rawLink;
+                    }
+
+                    // 2. Se for texto mas contiver uma URL escondida (caso da fórmula)
+                    if (rawLink && rawLink.includes('http')) {
+                        const match = rawLink.match(/(https?:\/\/[^\s";]+)/);
+                        if (match) return match[0];
+                    }
+
+                    // 3. Fallback: Gera link pelo Telefone se não tiver link
+                    if (phone) {
+                        let cleanPhone = phone.replace(/\D/g, ''); // Remove tudo que não é numero
+                        if (!cleanPhone) return null;
+                        
+                        // Adiciona 55 se parecer um número BR sem DDI (10 ou 11 dígitos)
+                        if (cleanPhone.length >= 10 && cleanPhone.length <= 11) {
+                            cleanPhone = '55' + cleanPhone;
+                        }
+                        
+                        return `https://wa.me/${cleanPhone}`;
+                    }
+
+                    return null;
+                },
+
+                // --- Lógica de Progresso ---
+                getProgress(status) {
+                    if (!status) return 0;
+                    const s = status.toLowerCase();
+                    if (s.includes('fechado')) return 100;
+                    if (s.includes('vídeo enviado')) return 100; // Produção completa
+                    if (s.includes('negociação')) return 75;
+                    if (s.includes('remarketing')) return 60;
+                    if (s.includes('mensagem')) return 20; // Etapa inicial
+                    if (s.includes('contactar')) return 5;
+                    if (s.includes('inválido') || s.includes('vácuo')) return 100; // Processo encerrou (negativamente)
+                    return 0;
+                },
+                getProgressColor(status) {
+                    if (!status) return 'bg-slate-600';
+                    const s = status.toLowerCase();
+                    if (s.includes('fechado')) return 'bg-green-500'; // Venda!
+                    if (s.includes('vídeo enviado')) return 'bg-purple-500'; // Sucesso produção
+                    if (s.includes('inválido') || s.includes('vácuo')) return 'bg-red-900'; // Falha
+                    if (s.includes('negociação')) return 'bg-blue-400';
+                    if (s.includes('mensagem')) return 'bg-yellow-500';
+                    return 'bg-slate-500';
+                },
+
+                showToast(title, message, type) {
+                    this.toast = { show: true, title, message, type };
+                    setTimeout(() => this.toast.show = false, 3000);
+                }
+            },
+            mounted() {
+                // Carregar Dados
+                this.fetchData();
+
+                // Lógica de Fade Out do Loading Screen
+                setTimeout(() => {
+                    this.startFadeOut = true;
+                    // Remove o elemento do DOM após o fade
+                    setTimeout(() => {
+                        this.showLoader = false;
+                    }, 500);
+                }, 3000);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

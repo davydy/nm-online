@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nomo - Gerenciador de Mídia Web</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        nomo: {
+                            black: '#0f0f11',
+                            dark: '#18181b',
+                            card: '#27272a',
+                            accent: '#6366f1',
+                            accentHover: '#4f46e5',
+                            text: '#e4e4e7',
+                            muted: '#a1a1aa'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0f0f11;
+            color: #e4e4e7;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #18181b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1; 
+        }
+
+        /* Drag and Drop Visuals */
+        .draggable-source {
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .draggable-source:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        .drop-target {
+            transition: all 0.3s ease;
+            border: 2px dashed #3f3f46;
+        }
+        .drop-target.drag-over {
+            border-color: #6366f1;
+            background-color: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+        .drop-target.filled {
+            border-style: solid;
+            border-color: #22c55e;
+        }
+
+        /* Whiteboard Grid */
+        .whiteboard-bg {
+            background-image: radial-gradient(#27272a 1px, transparent 1px);
+            background-size: 20px 20px;
+            contain: content; 
+            overscroll-behavior: none;
+        }
+
+        /* Animação de Salvamento */
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .saving-indicator {
+            animation: pulse-green 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Header -->
+    <header class="h-16 bg-nomo-dark border-b border-gray-800 flex items-center justify-between px-6 z-40 shadow-lg shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-nomo-accent to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <div class="hidden sm:block">
+                <h1 class="text-xl font-bold tracking-tight text-white">Nomo <span class="text-nomo-accent font-light">Code Studio</span></h1>
+                <div class="flex items-center gap-2">
+                    <p class="text-xs text-nomo-muted">Gerenciador de Mídia Inteligente</p>
+                    <!-- Indicador de Status do Backup -->
+                    <span id="db-status" class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-gray-400 border border-gray-700 transition-colors">
+                        <i class="fa-solid fa-cloud mr-1"></i>Pronto
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar (Visual) -->
+        <div id="progress-container" class="hidden md:flex flex-col w-64 mx-4">
+            <div class="flex justify-between text-[10px] text-gray-400 mb-1">
+                <span>Progresso</span>
+                <span id="progress-text">0/0</span>
+            </div>
+            <div class="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-nomo-accent w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+
+        <div class="flex gap-2 sm:gap-3">
+            <button onclick="app.resetProject()" class="text-sm text-red-400 hover:text-red-300 transition px-2 py-2" title="Limpar tudo">
+                <i class="fa-solid fa-trash-can sm:mr-2"></i><span class="hidden sm:inline">Limpar</span>
+            </button>
+            <button onclick="app.togglePreview()" class="bg-gray-700 hover:bg-gray-600 text-white px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition flex items-center shadow-md border border-gray-600">
+                <i class="fa-solid fa-wand-magic-sparkles sm:mr-2 text-nomo-accent"></i> <span class="hidden sm:inline">Editor ao Vivo</span>
+            </button>
+            <button onclick="app.exportCode()" class="bg-nomo-accent hover:bg-nomo-accentHover text-white px-3 sm:px-5 py-2 rounded-md text-sm font-medium transition flex items-center shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-download sm:mr-2"></i> <span class="hidden sm:inline">Exportar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Tela de Entrada -->
+        <div id="input-screen" class="fixed inset-0 z-50 bg-nomo-black overflow-y-auto transition-opacity duration-500 flex flex-col">
+            <div class="min-h-screen flex items-center justify-center p-6 sm:p-12">
+                <div class="max-w-2xl w-full bg-nomo-card border border-gray-800 rounded-2xl p-8 shadow-2xl text-center relative">
+                    
+                    <div class="mb-6 inline-block p-4 rounded-full bg-nomo-dark border border-gray-700">
+                        <i class="fa-solid fa-code text-4xl text-nomo-accent"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2">Carregar Projeto</h2>
+                    <p class="text-nomo-muted mb-8">Cole seu código HTML ou faça upload do arquivo.</p>
+                    
+                    <div class="grid gap-6">
+                        <textarea id="raw-code-input" class="w-full h-40 bg-nomo-black border border-gray-700 rounded-lg p-4 text-sm font-mono text-gray-300 focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none resize-none" placeholder="<!-- Cole seu código HTML aqui... -->"></textarea>
+                        
+                        <div class="relative">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-700"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-nomo-card text-gray-500">OU</span>
+                            </div>
+                        </div>
+
+                        <label class="flex flex-col items-center px-4 py-6 bg-nomo-dark text-blue rounded-lg shadow-lg tracking-wide uppercase border border-blue cursor-pointer hover:bg-gray-800 hover:border-nomo-accent transition group">
+                            <i class="fas fa-cloud-upload-alt fa-2x text-nomo-muted group-hover:text-nomo-accent transition"></i>
+                            <span class="mt-2 text-sm leading-normal text-nomo-muted group-hover:text-white">Selecione um arquivo (.html, .txt)</span>
+                            <input type='file' class="hidden" id="file-upload-input" accept=".html,.txt,.htm" />
+                        </label>
+
+                        <button onclick="app.processInput()" class="w-full bg-nomo-accent hover:bg-nomo-accentHover text-white font-bold py-3 rounded-lg shadow-lg transform transition hover:scale-[1.01]">
+                            Iniciar Mapeamento
+                        </button>
+                        
+                        <div id="backup-msg" class="hidden p-3 bg-green-900/20 border border-green-800 rounded text-green-400 text-sm flex items-center justify-center animate-pulse">
+                            <i class="fa-solid fa-database mr-2"></i> Projeto restaurado do banco de dados.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface Principal -->
+        <div id="workspace-screen" class="flex-1 flex w-full opacity-0 pointer-events-none transition-opacity duration-500 h-full">
+            
+            <!-- Sidebar -->
+            <aside id="media-sidebar" class="w-72 sm:w-80 bg-nomo-dark border-r border-gray-800 flex flex-col z-10 shadow-xl transition-all duration-300 absolute sm:relative h-full transform -translate-x-full sm:translate-x-0">
+                <div class="p-4 border-b border-gray-800 bg-nomo-dark flex justify-between items-center">
+                    <div>
+                        <h3 class="font-semibold text-white flex items-center">
+                            <i class="fa-solid fa-images text-nomo-accent mr-2"></i> Mídia
+                        </h3>
+                        <p class="text-[10px] text-nomo-muted mt-0.5">Arraste arquivos para cá</p>
+                    </div>
+                    <button class="sm:hidden text-gray-400" onclick="app.toggleSidebar()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="media-dropzone" class="m-4 p-6 border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-center transition hover:border-nomo-accent hover:bg-gray-800/50 cursor-pointer relative overflow-hidden group shrink-0">
+                    <input type="file" id="media-upload-input" multiple accept="image/*,video/*,audio/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-500 mb-2 group-hover:text-nomo-accent transition"></i>
+                    <span class="text-xs text-gray-400">Clique ou solte arquivos</span>
+                </div>
+
+                <div id="media-library" class="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+                    <div id="empty-library-msg" class="text-center text-gray-600 mt-10">
+                        <i class="fa-solid fa-box-open text-3xl mb-2 opacity-30"></i>
+                        <p class="text-xs">Biblioteca vazia</p>
+                    </div>
+                </div>
+            </aside>
+
+            <button onclick="app.toggleSidebar()" class="absolute bottom-6 left-6 z-30 bg-nomo-accent text-white p-3 rounded-full shadow-lg sm:hidden">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+
+            <!-- Área Central -->
+            <section class="flex-1 whiteboard-bg relative overflow-hidden flex flex-col h-full w-full">
+                <div class="absolute top-4 left-4 right-4 sm:right-auto bg-nomo-card/90 backdrop-blur border border-gray-700 px-4 py-2 rounded-full text-xs text-gray-300 shadow-sm z-10 flex items-center justify-between sm:justify-start">
+                    <span class="flex items-center"><i class="fa-solid fa-arrow-pointer mr-2 text-nomo-accent"></i>Arraste as imagens para os slots</span>
+                </div>
+
+                <div id="slots-container" class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-10 flex flex-wrap content-start gap-6 justify-center pb-24">
+                    <!-- Slots aqui -->
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Modal de Prévia Interativa (EDITOR AO VIVO) -->
+    <div id="preview-modal" class="fixed inset-0 z-50 bg-black/90 hidden flex flex-col">
+        <div class="h-14 bg-nomo-dark border-b border-gray-800 flex items-center justify-between px-6 shrink-0 shadow-lg relative z-20">
+            <div class="flex items-center gap-4">
+                <h3 class="text-white font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-nomo-accent"></i> Editor Visual
+                </h3>
+                <span class="text-xs text-gray-400 hidden sm:inline-block bg-gray-800 px-3 py-1 rounded-full border border-gray-700">
+                    <i class="fa-solid fa-mouse-pointer mr-1"></i> Selecione uma imagem para abrir os controles
+                </span>
+            </div>
+            <button onclick="app.togglePreview()" class="text-gray-400 hover:text-white p-2 transition hover:bg-white/10 rounded-full">
+                <i class="fa-solid fa-xmark fa-lg"></i>
+            </button>
+        </div>
+        <div class="flex-1 bg-white relative w-full h-full overflow-hidden">
+            <iframe id="preview-iframe" class="w-full h-full border-none bg-white"></iframe>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-nomo-card border-l-4 border-nomo-accent text-white px-6 py-4 rounded shadow-2xl transform translate-y-20 opacity-0 transition duration-300 z-[60] flex items-center max-w-sm pointer-events-none">
+        <i class="fa-solid fa-info-circle mr-3 text-nomo-accent"></i>
+        <span id="toast-msg" class="text-sm">Mensagem</span>
+    </div>
+
+    <!-- Templates -->
+    <template id="media-item-template">
+        <div class="media-item draggable-source bg-nomo-card p-2 rounded-lg border border-gray-700 flex items-center gap-3 group relative hover:border-gray-500 cursor-grab active:cursor-grabbing select-none" draggable="true">
+            <div class="w-10 h-10 bg-gray-900 rounded overflow-hidden flex-shrink-0 flex items-center justify-center border border-gray-800">
+                <img class="w-full h-full object-cover media-thumb" src="" alt="">
+                <i class="media-icon fa-solid fa-file-video text-gray-500 hidden"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-gray-200 truncate media-name" title="">nome.png</p>
+                <p class="text-[10px] text-gray-500 media-type">Imagem</p>
+            </div>
+            <div class="text-gray-600 px-2 cursor-grab">
+                <i class="fa-solid fa-grip-vertical"></i>
+            </div>
+        </div>
+    </template>
+
+    <template id="slot-card-template">
+        <div class="slot-card drop-target w-full max-w-[320px] bg-nomo-card rounded-xl shadow-xl flex flex-col overflow-hidden relative group border-2 border-transparent transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+            
+            <div class="bg-nomo-dark p-3 border-b border-gray-800 flex justify-between items-center gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="slot-tag-badge bg-blue-900/30 text-blue-400 text-[10px] px-2 py-0.5 rounded border border-blue-900/50 font-mono font-bold"></span>
+                    <span class="slot-id text-sm text-gray-200 font-mono font-bold truncate block" title=""></span>
+                </div>
+                <div class="slot-status w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
+            </div>
+            
+            <div class="px-4 py-2 bg-gray-800/30 border-b border-gray-800 h-8 flex items-center">
+                <p class="slot-context text-[11px] text-gray-400 truncate italic w-full" title=""></p>
+            </div>
+
+            <div class="slot-visual relative h-40 bg-black/40 flex items-center justify-center overflow-hidden pattern-grid-lg">
+                <div class="placeholder-view flex flex-col items-center text-gray-600 transition-opacity duration-300">
+                    <i class="fa-solid fa-image text-3xl mb-2 opacity-40 group-hover:opacity-60 group-hover:scale-110 transition"></i>
+                    <span class="text-[10px] uppercase tracking-wider">Arraste aqui</span>
+                </div>
+                <img class="current-image w-full h-full object-contain hidden z-10 bg-nomo-black/50" src="" alt="Preview">
+                
+                <button class="remove-btn absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hidden z-20 shadow-lg transition transform hover:scale-110" title="Remover imagem">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+
+                <button class="edit-btn absolute bottom-3 right-3 bg-nomo-accent hover:bg-nomo-accentHover text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg hidden z-20 items-center transition transform hover:scale-105" title="Ajustar ao vivo">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Editar
+                </button>
+            </div>
+
+            <div class="p-2 bg-nomo-dark text-[10px] text-center border-t border-gray-800 flex items-center justify-between px-4">
+                <span class="text-gray-500">SRC Original:</span>
+                <span class="current-filename text-gray-400 font-mono truncate max-w-[150px]" title=""></span>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        /**
+         * IndexedDB Wrapper para Backup Robusto
+         * Otimizado para funcionar com grandes volumes de dados (imagens)
+         */
+        const db = {
+            dbName: 'NomoProjectDB',
+            storeName: 'projects',
+            version: 1,
+
+            open() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.version);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            db.createObjectStore(this.storeName, { keyPath: 'id' });
+                        }
+                    };
+                    request.onsuccess = (e) => resolve(e.target.result);
+                    request.onerror = (e) => reject('Erro ao abrir DB: ' + e.target.error);
+                });
+            },
+
+            async saveProject(data) {
+                try {
+                    const database = await this.open();
+                    return new Promise((resolve, reject) => {
+                        const tx = database.transaction(this.storeName, 'readwrite');
+                        const store = tx.objectStore(this.storeName);
+                        // Sempre salva no ID 'current' para backup automático
+                        const request = store.put({ id: 'current', ...data });
+                        request.onsuccess = () => resolve();
+                        request.onerror = (e) => reject('Falha ao salvar: ' + e.target.error);
+                    });
+                } catch (err) {
+                    console.error(err);
+                    throw err;
+                }
+            },
+
+            async loadProject() {
+                try {
+                    const database = await this.open();
+                    return new Promise((resolve, reject) => {
+                        const tx = database.transaction(this.storeName, 'readonly');
+                        const store = tx.objectStore(this.storeName);
+                        const request = store.get('current');
+                        request.onsuccess = (e) => resolve(e.target.result);
+                        request.onerror = (e) => reject('Falha ao carregar: ' + e.target.error);
+                    });
+                } catch (err) {
+                    console.error(err);
+                    return null;
+                }
+            }
+        };
+
+        const app = {
+            state: {
+                originalCode: '', 
+                dom: null,        
+                slots: [],
+                mediaLibrary: [], 
+                projectTitle: '', 
+                currentScreen: 'input',
+                saveTimeout: null
+            },
+
+            init() {
+                this.setupEventListeners();
+                this.tryLoadBackup();
+                this.setupPreviewMessageListener();
+            },
+
+            setupEventListeners() {
+                document.getElementById('file-upload-input').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            document.getElementById('raw-code-input').value = ev.target.result;
+                            this.processInput();
+                        };
+                        reader.readAsText(file);
+                    }
+                });
+
+                const dropzone = document.getElementById('media-dropzone');
+                const mediaInput = document.getElementById('media-upload-input');
+
+                mediaInput.addEventListener('change', (e) => this.handleMediaUpload(e.target.files));
+
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('border-nomo-accent', 'bg-gray-800');
+                });
+                
+                dropzone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-nomo-accent', 'bg-gray-800');
+                });
+
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.remove('border-nomo-accent', 'bg-gray-800');
+                    this.handleMediaUpload(e.dataTransfer.files);
+                });
+            },
+
+            processInput(isRestore = false) {
+                const code = document.getElementById('raw-code-input').value;
+                if (!code.trim()) {
+                    if(!isRestore) this.showToast('Por favor, insira algum código HTML.');
+                    return;
+                }
+
+                this.state.originalCode = code;
+                const parser = new DOMParser();
+                this.state.dom = parser.parseFromString(code, 'text/html');
+
+                const titleTag = this.state.dom.querySelector('title');
+                this.state.projectTitle = titleTag ? titleTag.innerText.trim() : '';
+
+                this.analyzeCode();
+                this.switchScreen('workspace');
+                
+                if(!isRestore) {
+                    this.triggerAutoSave(); 
+                    this.showToast('Mapeamento concluído.');
+                }
+            },
+
+            analyzeCode() {
+                const oldSlotsMap = new Map(this.state.slots.map(s => [s.uniqueId, s]));
+                
+                this.state.slots = [];
+                const container = document.getElementById('slots-container');
+                container.innerHTML = '';
+
+                const mediaTags = this.state.dom.querySelectorAll('img, video, audio');
+                
+                let counter = 0;
+
+                mediaTags.forEach((el) => {
+                    counter++;
+                    const uniqueId = `nomo-slot-${counter}`;
+                    el.setAttribute('data-nomo-id', uniqueId); 
+
+                    let cardTitle = '';
+                    if (el.id) cardTitle = `#${el.id}`;
+                    else if (el.className && typeof el.className === 'string' && el.className.trim() !== '') cardTitle = `.${el.className.split(' ')[0]}`;
+                    else cardTitle = `${el.tagName.toLowerCase()} #${counter}`;
+
+                    let rawContext = el.getAttribute('alt') || el.getAttribute('title') || '';
+                    if (!rawContext) {
+                        const parent = el.parentElement;
+                        if(parent) {
+                            if (parent.id) rawContext = `Em #${parent.id}`;
+                            else if (parent.className) rawContext = `Em .${parent.className.split(' ')[0]}`;
+                            else rawContext = `Dentro de <${parent.tagName.toLowerCase()}>`;
+                        }
+                    }
+
+                    let cleanContext = rawContext;
+                    if (this.state.projectTitle && cleanContext.includes(this.state.projectTitle)) {
+                        cleanContext = cleanContext.replace(this.state.projectTitle, '').replace(/^[\s-–|]+/, '').trim();
+                    }
+                    if (cleanContext.length > 50) cleanContext = cleanContext.substring(0, 47) + '...';
+                    if (!cleanContext) cleanContext = 'Sem descrição';
+
+                    const oldSlot = oldSlotsMap.get(uniqueId);
+                    
+                    const slotData = oldSlot || {
+                        uniqueId: uniqueId,
+                        tagName: el.tagName.toLowerCase(),
+                        originalSrc: el.getAttribute('src') || '',
+                        currentFileObj: null,
+                        displayTitle: cardTitle,
+                        context: cleanContext,
+                        elRef: el, 
+                        styleSettings: { posX: 50, posY: 50, zoom: 1, fit: 'cover' }
+                    };
+                    slotData.elRef = el;
+
+                    this.state.slots.push(slotData);
+                    this.renderSlot(slotData);
+                });
+
+                this.updateProgressBar();
+                if (this.state.slots.length === 0) {
+                    container.innerHTML = `<div class="text-gray-500 mt-10">Nenhuma tag de mídia encontrada.</div>`;
+                }
+            },
+
+            renderSlot(slotData) {
+                const template = document.getElementById('slot-card-template');
+                const clone = template.content.cloneNode(true);
+                const card = clone.querySelector('.slot-card');
+                
+                card.querySelector('.slot-tag-badge').textContent = slotData.tagName.toUpperCase();
+                
+                const titleEl = card.querySelector('.slot-id');
+                titleEl.textContent = slotData.displayTitle;
+                titleEl.title = slotData.displayTitle;
+
+                const ctxEl = card.querySelector('.slot-context');
+                ctxEl.textContent = slotData.context;
+                ctxEl.title = slotData.context;
+
+                const filename = slotData.originalSrc.split('/').pop() || 'src vazio';
+                const fileDisplay = card.querySelector('.current-filename');
+                fileDisplay.textContent = filename;
+                fileDisplay.title = slotData.originalSrc;
+
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    card.classList.add('drag-over');
+                });
+                card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    card.classList.remove('drag-over');
+                });
+
+                card.setAttribute('data-slot-uid', slotData.uniqueId);
+                
+                const editBtn = card.querySelector('.edit-btn');
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.togglePreview(slotData.uniqueId);
+                };
+
+                this.updateSlotVisual(card, slotData);
+                document.getElementById('slots-container').appendChild(card);
+            },
+
+            updateSlotVisual(cardElement, slotData) {
+                const img = cardElement.querySelector('.current-image');
+                const placeholder = cardElement.querySelector('.placeholder-view');
+                const status = cardElement.querySelector('.slot-status');
+                const filenameDisplay = cardElement.querySelector('.current-filename');
+                const removeBtn = cardElement.querySelector('.remove-btn');
+                const editBtn = cardElement.querySelector('.edit-btn');
+
+                if (slotData.currentFileObj) {
+                    img.src = slotData.currentFileObj.url;
+                    img.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    
+                    if(slotData.styleSettings) {
+                        img.style.objectFit = slotData.styleSettings.fit || 'cover';
+                        img.style.objectPosition = `${slotData.styleSettings.posX}% ${slotData.styleSettings.posY}%`;
+                        img.style.transform = `scale(${slotData.styleSettings.zoom || 1})`;
+                    }
+                    
+                    status.classList.remove('bg-red-500');
+                    status.classList.add('bg-green-500');
+                    status.classList.add('shadow-[0_0_10px_#22c55e]');
+                    cardElement.classList.add('filled', 'border-green-500/30');
+                    
+                    filenameDisplay.textContent = slotData.currentFileObj.file.name;
+                    filenameDisplay.classList.add('text-nomo-accent', 'font-bold');
+                    
+                    removeBtn.classList.remove('hidden');
+                    editBtn.classList.remove('hidden');
+                    editBtn.classList.add('flex');
+
+                    removeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        slotData.currentFileObj = null;
+                        slotData.styleSettings = { posX: 50, posY: 50, zoom: 1, fit: 'cover' };
+                        this.updateSlotVisual(cardElement, slotData);
+                        this.triggerAutoSave();
+                    };
+
+                } else {
+                    if (slotData.originalSrc.startsWith('http') || slotData.originalSrc.startsWith('data:')) {
+                        img.src = slotData.originalSrc;
+                        img.classList.remove('hidden');
+                        placeholder.classList.add('hidden');
+                        img.classList.add('opacity-50', 'grayscale');
+                        img.style = ""; 
+                    } else {
+                        img.classList.add('hidden');
+                        placeholder.classList.remove('hidden');
+                    }
+                    
+                    status.classList.add('bg-red-500');
+                    status.classList.remove('bg-green-500');
+                    status.classList.remove('shadow-[0_0_10px_#22c55e]');
+                    cardElement.classList.remove('filled', 'border-green-500/30');
+                    filenameDisplay.textContent = slotData.originalSrc.split('/').pop() || 'Original';
+                    filenameDisplay.classList.remove('text-nomo-accent', 'font-bold');
+                    removeBtn.classList.add('hidden');
+                    editBtn.classList.add('hidden');
+                    editBtn.classList.remove('flex');
+                }
+                this.updateProgressBar();
+            },
+
+            handleMediaUpload(files) {
+                if (files.length > 0) document.getElementById('empty-library-msg').classList.add('hidden');
+                Array.from(files).forEach(file => {
+                    if (this.state.mediaLibrary.some(m => m.file.name === file.name)) return;
+                    const url = URL.createObjectURL(file);
+                    const mediaObj = {
+                        id: Date.now() + Math.random(),
+                        file: file, url: url,
+                        type: file.type.startsWith('image') ? 'image' : (file.type.startsWith('video') ? 'video' : 'audio')
+                    };
+                    this.state.mediaLibrary.push(mediaObj);
+                    this.renderLibraryItem(mediaObj);
+                });
+                this.triggerAutoSave();
+            },
+
+            renderLibraryItem(mediaObj) {
+                const template = document.getElementById('media-item-template');
+                const clone = template.content.cloneNode(true);
+                const item = clone.querySelector('.media-item');
+
+                if (mediaObj.type === 'image') item.querySelector('.media-thumb').src = mediaObj.url;
+                else {
+                    item.querySelector('.media-thumb').classList.add('hidden');
+                    item.querySelector('.media-icon').classList.remove('hidden');
+                    if(mediaObj.type === 'video') item.querySelector('.media-icon').className = 'media-icon fa-solid fa-file-video text-gray-400 text-xl';
+                    else item.querySelector('.media-icon').className = 'media-icon fa-solid fa-file-audio text-gray-400 text-xl';
+                }
+
+                item.querySelector('.media-name').textContent = mediaObj.file.name;
+                item.querySelector('.media-name').title = mediaObj.file.name;
+                item.querySelector('.media-type').textContent = mediaObj.type.toUpperCase();
+
+                item.addEventListener('dragstart', (e) => {
+                    window.draggedMedia = mediaObj; 
+                    e.dataTransfer.setData('text/plain', mediaObj.url);
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+
+                document.getElementById('media-library').appendChild(item);
+            },
+
+            setupGlobalDrop() {
+                const container = document.getElementById('slots-container');
+                
+                container.addEventListener('drop', (e) => {
+                    const target = e.target.closest('.slot-card');
+                    if (target && window.draggedMedia) {
+                        const uid = target.getAttribute('data-slot-uid');
+                        const slot = this.state.slots.find(s => s.uniqueId === uid);
+                        
+                        if (slot) {
+                            slot.currentFileObj = window.draggedMedia;
+                            this.updateSlotVisual(target, slot);
+                            this.triggerAutoSave(); 
+                            this.showToast(`Mídia aplicada: ${slot.displayTitle}`);
+                        }
+                        window.draggedMedia = null;
+                    }
+                });
+                container.addEventListener('dragover', (e) => e.preventDefault());
+            },
+
+            switchScreen(screenName) {
+                const inputScreen = document.getElementById('input-screen');
+                const workspace = document.getElementById('workspace-screen');
+                this.state.currentScreen = screenName;
+
+                if (screenName === 'workspace') {
+                    inputScreen.classList.add('opacity-0', 'pointer-events-none');
+                    setTimeout(() => inputScreen.classList.add('hidden'), 500);
+                    workspace.classList.remove('opacity-0', 'pointer-events-none');
+                    this.setupGlobalDrop();
+                } else {
+                    inputScreen.classList.remove('hidden');
+                    setTimeout(() => inputScreen.classList.remove('opacity-0', 'pointer-events-none'), 10);
+                    workspace.classList.add('opacity-0', 'pointer-events-none');
+                }
+            },
+
+            toggleSidebar() {
+                const sidebar = document.getElementById('media-sidebar');
+                sidebar.classList.toggle('-translate-x-full');
+            },
+
+            // --- LÓGICA DE PRÉVIA MELHORADA (NOVO EDITOR) ---
+            togglePreview(focusSlotId = null) {
+                const modal = document.getElementById('preview-modal');
+                const iframe = document.getElementById('preview-iframe');
+
+                if (modal.classList.contains('hidden')) {
+                    if (!this.state.dom) return this.showToast('Carregue um código primeiro.');
+                    
+                    const previewDoc = this.state.dom.cloneNode(true);
+                    
+                    this.state.slots.forEach(slot => {
+                        if (slot.currentFileObj) {
+                            const el = previewDoc.querySelector(`[data-nomo-id="${slot.uniqueId}"]`);
+                            if (el) {
+                                el.setAttribute('src', slot.currentFileObj.url);
+                                const s = slot.styleSettings;
+                                if(s) {
+                                    el.style.objectFit = s.fit;
+                                    el.style.objectPosition = `${s.posX}% ${s.posY}%`;
+                                    el.style.transform = `scale(${s.zoom})`;
+                                }
+                            }
+                        }
+                    });
+
+                    // CSS Injetado no Iframe
+                    const styleEl = document.createElement('style');
+                    styleEl.textContent = `
+                        [data-nomo-id] { cursor: pointer; transition: outline 0.2s; position: relative; }
+                        [data-nomo-id]:hover { outline: 3px solid #6366f1; opacity: 0.9; }
+                        .nomo-editing { outline: 4px solid #22c55e !important; z-index: 10000; box-shadow: 0 0 0 9999px rgba(0,0,0,0.7); }
+                        
+                        /* UI do Editor Flutuante */
+                        #nomo-editor-ui {
+                            position: fixed; top: 20px; right: 20px; width: 300px;
+                            background: #18181b; color: white; border: 1px solid #3f3f46;
+                            padding: 15px; border-radius: 12px; font-family: sans-serif;
+                            z-index: 999999; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+                            display: none; animation: fadeIn 0.3s ease;
+                        }
+                        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+                        .nomo-row { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+                        .nomo-label { font-size: 11px; color: #a1a1aa; text-transform: uppercase; font-weight: bold; }
+                        .nomo-btn-group { display: flex; background: #27272a; border-radius: 6px; padding: 2px; width: 100%; }
+                        .nomo-btn-opt { flex: 1; border: none; background: transparent; color: #71717a; padding: 6px; font-size: 11px; cursor: pointer; border-radius: 4px; transition: 0.2s; }
+                        .nomo-btn-opt.active { background: #6366f1; color: white; font-weight: bold; }
+                        .nomo-range { width: 100%; height: 4px; background: #3f3f46; border-radius: 2px; -webkit-appearance: none; }
+                        .nomo-range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #6366f1; border-radius: 50%; cursor: pointer; }
+                        .nomo-pad-area { width: 100%; height: 80px; background: #27272a; border: 1px dashed #3f3f46; border-radius: 6px; position: relative; cursor: move; margin-top: 5px; }
+                        .nomo-pad-dot { width: 10px; height: 10px; background: #22c55e; border-radius: 50%; position: absolute; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 5px #22c55e; }
+                        .nomo-close { position: absolute; top: 10px; right: 10px; cursor: pointer; color: #71717a; }
+                        .nomo-close:hover { color: white; }
+                    `;
+                    previewDoc.head.appendChild(styleEl);
+
+                    // JS Injetado no Iframe
+                    const scriptEl = document.createElement('script');
+                    scriptEl.textContent = `
+                        const editorUI = document.createElement('div');
+                        editorUI.id = 'nomo-editor-ui';
+                        editorUI.innerHTML = \`
+                            <div class="nomo-close" onclick="closeEditor()">✕</div>
+                            <div class="nomo-row"><span class="nomo-label">Encaixe da Imagem</span></div>
+                            <div class="nomo-row">
+                                <div class="nomo-btn-group">
+                                    <button class="nomo-btn-opt" onclick="setFit('cover')" id="btn-cover">Cobrir</button>
+                                    <button class="nomo-btn-opt" onclick="setFit('contain')" id="btn-contain">Conter</button>
+                                    <button class="nomo-btn-opt" onclick="setFit('fill')" id="btn-fill">Esticar</button>
+                                </div>
+                            </div>
+                            <div class="nomo-row">
+                                <span class="nomo-label">Zoom</span>
+                                <span class="nomo-label" id="zoom-val">100%</span>
+                            </div>
+                            <div class="nomo-row"><input type="range" min="0.5" max="3" step="0.1" value="1" class="nomo-range" oninput="setZoom(this.value)"></div>
+                            <div class="nomo-row"><span class="nomo-label">Posição (Arraste)</span></div>
+                            <div class="nomo-pad-area" id="pos-pad"><div class="nomo-pad-dot" id="pos-dot" style="left:50%; top:50%;"></div></div>
+                        \`;
+                        document.body.appendChild(editorUI);
+
+                        let activeEl = null;
+                        let activeData = { fit: 'cover', zoom: 1, x: 50, y: 50 };
+
+                        document.addEventListener('click', (e) => {
+                            const target = e.target.closest('[data-nomo-id]');
+                            if(target) {
+                                e.preventDefault(); e.stopPropagation();
+                                openEditor(target);
+                            } else if (!e.target.closest('#nomo-editor-ui')) {
+                                closeEditor();
+                            }
+                        });
+
+                        function openEditor(el) {
+                            if(activeEl) activeEl.classList.remove('nomo-editing');
+                            activeEl = el;
+                            activeEl.classList.add('nomo-editing');
+                            
+                            // Load Values
+                            activeData.fit = el.style.objectFit || 'cover';
+                            activeData.zoom = el.style.transform ? parseFloat(el.style.transform.replace('scale(', '')) : 1;
+                            const pos = el.style.objectPosition || '50% 50%';
+                            activeData.x = parseFloat(pos.split(' ')[0]) || 50;
+                            activeData.y = parseFloat(pos.split(' ')[1] || pos.split(' ')[0]) || 50;
+
+                            updateUI();
+                            editorUI.style.display = 'block';
+                            activeEl.scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center'});
+                        }
+
+                        function closeEditor() {
+                            if(activeEl) activeEl.classList.remove('nomo-editing');
+                            activeEl = null;
+                            editorUI.style.display = 'none';
+                        }
+
+                        window.setFit = (val) => {
+                            activeData.fit = val;
+                            activeEl.style.objectFit = val;
+                            updateUI();
+                            sendUpdate();
+                        }
+
+                        window.setZoom = (val) => {
+                            activeData.zoom = val;
+                            activeEl.style.transform = 'scale(' + val + ')';
+                            document.getElementById('zoom-val').innerText = Math.round(val * 100) + '%';
+                            sendUpdate();
+                        }
+
+                        function updateUI() {
+                            document.querySelectorAll('.nomo-btn-opt').forEach(b => b.classList.remove('active'));
+                            document.getElementById('btn-' + activeData.fit).classList.add('active');
+                            document.querySelector('.nomo-range').value = activeData.zoom;
+                            document.getElementById('zoom-val').innerText = Math.round(activeData.zoom * 100) + '%';
+                            document.getElementById('pos-dot').style.left = activeData.x + '%';
+                            document.getElementById('pos-dot').style.top = activeData.y + '%';
+                        }
+
+                        // Pad Drag Logic
+                        const pad = document.getElementById('pos-pad');
+                        let isDragging = false;
+
+                        pad.addEventListener('mousedown', startDrag);
+                        
+                        function startDrag(e) {
+                            isDragging = true;
+                            onDrag(e);
+                            document.addEventListener('mousemove', onDrag);
+                            document.addEventListener('mouseup', stopDrag);
+                        }
+
+                        function onDrag(e) {
+                            if(!isDragging) return;
+                            const rect = pad.getBoundingClientRect();
+                            let x = ((e.clientX - rect.left) / rect.width) * 100;
+                            let y = ((e.clientY - rect.top) / rect.height) * 100;
+                            x = Math.max(0, Math.min(100, x));
+                            y = Math.max(0, Math.min(100, y));
+                            
+                            activeData.x = x; activeData.y = y;
+                            activeEl.style.objectPosition = x + '% ' + y + '%';
+                            updateUI();
+                        }
+
+                        function stopDrag() {
+                            isDragging = false;
+                            document.removeEventListener('mousemove', onDrag);
+                            document.removeEventListener('mouseup', stopDrag);
+                            sendUpdate();
+                        }
+
+                        function sendUpdate() {
+                            if(!activeEl) return;
+                            window.parent.postMessage({
+                                type: 'nomo-update',
+                                id: activeEl.getAttribute('data-nomo-id'),
+                                posX: activeData.x, posY: activeData.y,
+                                zoom: activeData.zoom, fit: activeData.fit
+                            }, '*');
+                        }
+                    `;
+                    previewDoc.body.appendChild(scriptEl);
+
+                    iframe.srcdoc = previewDoc.documentElement.outerHTML;
+                    modal.classList.remove('hidden');
+
+                    if(focusSlotId) {
+                        iframe.onload = () => {
+                            setTimeout(() => {
+                                const el = iframe.contentDocument.querySelector(`[data-nomo-id="${focusSlotId}"]`);
+                                if(el) el.click(); 
+                            }, 500);
+                        };
+                    }
+
+                } else {
+                    modal.classList.add('hidden');
+                    iframe.srcdoc = '';
+                }
+            },
+
+            setupPreviewMessageListener() {
+                window.addEventListener('message', (event) => {
+                    if (event.data && event.data.type === 'nomo-update') {
+                        const { id, posX, posY, zoom, fit } = event.data;
+                        const slot = this.state.slots.find(s => s.uniqueId === id);
+                        if (slot) {
+                            slot.styleSettings = { posX, posY, zoom, fit };
+                            const card = document.querySelector(`.slot-card[data-slot-uid="${id}"]`);
+                            if(card) {
+                                const img = card.querySelector('.current-image');
+                                if(img) {
+                                    img.style.objectFit = fit;
+                                    img.style.objectPosition = `${posX}% ${posY}%`;
+                                    img.style.transform = `scale(${zoom})`;
+                                }
+                            }
+                            this.triggerAutoSave();
+                        }
+                    }
+                });
+            },
+
+            async exportCode() {
+                if (!this.state.dom) return;
+
+                const exportDoc = this.state.dom.cloneNode(true);
+                let changedCount = 0;
+
+                this.state.slots.forEach(slot => {
+                    const el = exportDoc.querySelector(`[data-nomo-id="${slot.uniqueId}"]`);
+                    if (slot.currentFileObj && el) {
+                        el.setAttribute('src', slot.currentFileObj.file.name);
+                        changedCount++;
+                        
+                        const s = slot.styleSettings;
+                        // Agora exporta style se tiver qualquer configuração, inclusive fit
+                        if(s) {
+                            const existingStyle = el.getAttribute('style') || '';
+                            // Remove estilos antigos de object-fit/position para não duplicar
+                            let cleanStyle = existingStyle.replace(/object-fit:[^;]+;/g, '').replace(/object-position:[^;]+;/g, '').replace(/transform:[^;]+;/g, '');
+                            
+                            const newStyle = `object-fit: ${s.fit}; object-position: ${s.posX}% ${s.posY}%; transform: scale(${s.zoom});`;
+                            el.setAttribute('style', cleanStyle + ' ' + newStyle);
+                        }
+                    }
+                });
+
+                exportDoc.querySelectorAll('[data-nomo-id]').forEach(el => el.removeAttribute('data-nomo-id'));
+
+                const htmlContent = exportDoc.documentElement.outerHTML;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+
+                try {
+                    if (window.showSaveFilePicker) {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: 'index_nomo_export.html',
+                            types: [{ description: 'Arquivo HTML', accept: {'text/html': ['.html']} }],
+                        });
+                        const writable = await handle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        this.showToast('Arquivo salvo com sucesso!');
+                    } else {
+                        throw new Error('Fallback');
+                    }
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'index_nomo_export.html';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                }
+            },
+
+            // --- DEBOUNCED SAVE ---
+            triggerAutoSave() {
+                const statusEl = document.getElementById('db-status');
+                statusEl.innerHTML = '<i class="fa-solid fa-sync fa-spin mr-1"></i> Salvando...';
+                statusEl.classList.remove('text-green-500', 'text-gray-400');
+                statusEl.classList.add('text-yellow-500');
+
+                if (this.state.saveTimeout) clearTimeout(this.state.saveTimeout);
+                this.state.saveTimeout = setTimeout(() => {
+                    this.saveToDB();
+                }, 1000); // Espera 1s de inatividade
+            },
+
+            async saveToDB() {
+                const statusEl = document.getElementById('db-status');
+                const serializableSlots = this.state.slots.map(s => ({
+                    uniqueId: s.uniqueId,
+                    styleSettings: s.styleSettings,
+                    currentFileId: s.currentFileObj ? s.currentFileObj.id : null
+                }));
+
+                const serializableLibrary = this.state.mediaLibrary.map(m => ({
+                    id: m.id,
+                    file: m.file, 
+                    type: m.type
+                }));
+
+                const data = {
+                    code: this.state.originalCode,
+                    screen: this.state.currentScreen,
+                    library: serializableLibrary,
+                    slots: serializableSlots,
+                    timestamp: Date.now()
+                };
+
+                try {
+                    await db.saveProject(data);
+                    statusEl.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Salvo';
+                    statusEl.classList.remove('text-yellow-500');
+                    statusEl.classList.add('text-green-500');
+                    setTimeout(() => statusEl.classList.replace('text-green-500', 'text-gray-400'), 2000);
+                } catch(e) {
+                    console.error(e);
+                    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Erro ao Salvar';
+                    statusEl.classList.remove('text-yellow-500');
+                    statusEl.classList.add('text-red-500');
+                }
+            },
+
+            async tryLoadBackup() {
+                try {
+                    const data = await db.loadProject();
+                    if (data && data.code) {
+                        document.getElementById('raw-code-input').value = data.code;
+                        document.getElementById('backup-msg').classList.remove('hidden');
+                        
+                        if (data.screen === 'workspace') {
+                            this.processInput(true);
+                            if (data.library) {
+                                document.getElementById('empty-library-msg').classList.add('hidden');
+                                data.library.forEach(item => {
+                                    const url = URL.createObjectURL(item.file);
+                                    const mediaObj = { id: item.id, file: item.file, url: url, type: item.type };
+                                    this.state.mediaLibrary.push(mediaObj);
+                                    this.renderLibraryItem(mediaObj);
+                                });
+                            }
+                            if (data.slots) {
+                                data.slots.forEach(savedSlot => {
+                                    const realSlot = this.state.slots.find(s => s.uniqueId === savedSlot.uniqueId);
+                                    if (realSlot) {
+                                        realSlot.styleSettings = savedSlot.styleSettings;
+                                        if (savedSlot.currentFileId) {
+                                            const mediaObj = this.state.mediaLibrary.find(m => m.id === savedSlot.currentFileId);
+                                            if (mediaObj) {
+                                                realSlot.currentFileObj = mediaObj;
+                                                const card = document.querySelector(`.slot-card[data-slot-uid="${realSlot.uniqueId}"]`);
+                                                if(card) this.updateSlotVisual(card, realSlot);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                            this.updateProgressBar();
+                            this.showToast('Sessão restaurada com sucesso.');
+                        }
+                    }
+                } catch (e) { console.log(e); }
+            },
+
+            resetProject() {
+                if(confirm('Tem certeza? Isso apagará todo o trabalho atual.')) {
+                    db.open().then(database => {
+                        const tx = database.transaction('projects', 'readwrite');
+                        tx.objectStore('projects').delete('current');
+                        location.reload();
+                    });
+                }
+            },
+
+            updateProgressBar() {
+                const total = this.state.slots.length;
+                const filled = this.state.slots.filter(s => s.currentFileObj).length;
+                const bar = document.getElementById('progress-bar');
+                const text = document.getElementById('progress-text');
+                
+                if (total > 0) {
+                    const pct = (filled / total) * 100;
+                    bar.style.width = `${pct}%`;
+                    text.textContent = `${filled}/${total}`;
+                    
+                    if(filled === total) {
+                        bar.classList.add('bg-green-500');
+                        bar.classList.remove('bg-nomo-accent');
+                    } else {
+                        bar.classList.remove('bg-green-500');
+                        bar.classList.add('bg-nomo-accent');
+                    }
+                }
+            },
+
+            showToast(msg) {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-msg').textContent = msg;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 4000);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => app.init());
+
+    </script>
+</body>
+</html>
