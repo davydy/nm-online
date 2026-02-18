@@ -165,7 +165,7 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,255,255,0.05);
         }
 
-        /* --- NOVAS ANIMAÇÕES DAS ABAS (FLUIDO CONTÍNUO) --- */
+        /* --- ANIMAÇÕES DAS ABAS --- */
         .nav-item-fluid {
             position: relative;
             overflow: hidden;
@@ -173,20 +173,13 @@
             transition: all 0.4s ease;
         }
 
-        /* Efeito de borda fluida e brilho interno */
         .nav-item-fluid::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(168, 85, 247, 0.0) 20%, 
-                rgba(168, 85, 247, 0.1) 50%, 
-                rgba(168, 85, 247, 0.0) 80%, 
-                transparent 100%
-            );
+            background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.0) 20%, rgba(168, 85, 247, 0.1) 50%, rgba(168, 85, 247, 0.0) 80%, transparent 100%);
             transform: skewX(-20deg) translateX(-150%);
-            transition: none; /* Controlado via animação */
+            transition: none; 
             animation: shimmerFlow 3s infinite ease-in-out;
         }
 
@@ -196,14 +189,12 @@
             transform: translateX(5px);
         }
 
-        /* Animação Contínua Fluida */
         @keyframes shimmerFlow {
             0% { transform: skewX(-20deg) translateX(-150%); }
             50% { transform: skewX(-20deg) translateX(150%); }
-            100% { transform: skewX(-20deg) translateX(150%); } /* Pausa no fim */
+            100% { transform: skewX(-20deg) translateX(150%); } 
         }
 
-        /* Estado Ativo da Aba */
         .nav-item-fluid.active {
             background: rgba(168, 85, 247, 0.15);
             border-color: rgba(168, 85, 247, 0.5);
@@ -213,12 +204,20 @@
         .nav-item-fluid.active::after {
             content: '';
             position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
+            left: 0; top: 0; bottom: 0; width: 3px;
             background: #a855f7;
             box-shadow: 0 0 10px #a855f7;
+        }
+
+        /* --- CUSTOM DROPDOWN ANIMATION --- */
+        .dropdown-enter-active,
+        .dropdown-leave-active {
+            transition: all 0.2s ease-out;
+        }
+        .dropdown-enter-from,
+        .dropdown-leave-to {
+            opacity: 0;
+            transform: translateY(-10px);
         }
 
         [v-cloak] { display: none; }
@@ -235,27 +234,22 @@
                 <div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
 
                 <div class="relative z-10 flex flex-col items-center">
-                    <!-- Logo -->
                     <div class="w-24 h-24 mb-6 relative group">
                         <div class="absolute inset-0 bg-nomo-accent blur-2xl opacity-30 rounded-full animate-pulse"></div>
                         <img src="logo.png" class="w-full h-full object-contain drop-shadow-2xl relative z-10">
                     </div>
 
-                    <!-- Titulo -->
                     <div class="text-center mb-8">
                         <h2 class="font-display text-3xl font-bold text-white tracking-tight">NOMO <span class="text-nomo-accent">SYSTEM</span></h2>
                         <p class="text-slate-400 text-xs uppercase tracking-widest">Acesso Restrito</p>
                     </div>
 
-                    <!-- Form -->
                     <div class="w-full space-y-4">
                         <div class="space-y-1">
                             <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Usuário</label>
                             <div class="relative">
                                 <i class="ph ph-user absolute left-3 top-3 text-slate-500"></i>
-                                <input v-model="loginForm.user" type="text" 
-                                    class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner"
-                                    placeholder="Identificação">
+                                <input v-model="loginForm.user" type="text" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="Identificação">
                             </div>
                         </div>
 
@@ -263,20 +257,13 @@
                             <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Senha</label>
                             <div class="relative">
                                 <i class="ph ph-lock-key absolute left-3 top-3 text-slate-500"></i>
-                                <input v-model="loginForm.pass" type="password" @keyup.enter="handleLogin"
-                                    class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner"
-                                    placeholder="••••">
+                                <input v-model="loginForm.pass" type="password" @keyup.enter="handleLogin" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="••••">
                             </div>
                         </div>
 
-                        <div v-if="loginError" class="text-red-500 text-xs text-center font-bold animate-pulse">
-                            {{ loginError }}
-                        </div>
+                        <div v-if="loginError" class="text-red-500 text-xs text-center font-bold animate-pulse">{{ loginError }}</div>
 
-                        <button @click="handleLogin" 
-                            class="w-full mt-6 py-3 bg-gradient-to-r from-nomo-accent to-indigo-600 hover:from-nomo-accent hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-nomo-accent/20 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-nomo-accent/40">
-                            ENTRAR
-                        </button>
+                        <button @click="handleLogin" class="w-full mt-6 py-3 bg-gradient-to-r from-nomo-accent to-indigo-600 hover:from-nomo-accent hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-nomo-accent/20 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-nomo-accent/40">ENTRAR</button>
                     </div>
                 </div>
             </div>
@@ -292,7 +279,6 @@
             <!-- Sidebar Navigation -->
             <aside class="w-20 lg:w-64 bg-nomo-surface border-r border-white/5 flex flex-col justify-between z-20 shadow-2xl transition-all">
                 <div>
-                    <!-- Logo Sidebar -->
                     <div class="h-32 flex items-center justify-center border-b border-white/5 relative overflow-hidden group">
                         <div class="absolute inset-0 bg-gradient-to-b from-nomo-accent/10 to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
                         <div class="relative w-20 h-20 flex items-center justify-center transition-transform transform group-hover:scale-110 duration-500">
@@ -301,69 +287,45 @@
                         </div>
                     </div>
 
-                    <!-- Nav Links Modern Fluid -->
                     <nav class="mt-8 px-3 space-y-2">
                         <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços de Trabalho</div>
 
-                        <button @click="currentView = 'geral'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
-                            :class="{'active': currentView === 'geral', 'text-slate-500 hover:text-white': currentView !== 'geral', 'text-nomo-accent': currentView === 'geral'}">
-                            <i class="ph ph-squares-four text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Visão Geral</span>
+                        <button @click="currentView = 'geral'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'geral', 'text-slate-500 hover:text-white': currentView !== 'geral', 'text-nomo-accent': currentView === 'geral'}">
+                            <i class="ph ph-squares-four text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Visão Geral</span>
                         </button>
 
-                        <button @click="currentView = 'dev'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
-                            :class="{'active': currentView === 'dev', 'text-slate-500 hover:text-white': currentView !== 'dev', 'text-blue-400': currentView === 'dev'}">
-                            <i class="ph ph-laptop text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Dev</span>
+                        <button @click="currentView = 'dev'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'dev', 'text-slate-500 hover:text-white': currentView !== 'dev', 'text-blue-400': currentView === 'dev'}">
+                            <i class="ph ph-laptop text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Dev</span>
                         </button>
 
-                        <button @click="currentView = 'editor'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
-                            :class="{'active': currentView === 'editor', 'text-slate-500 hover:text-white': currentView !== 'editor', 'text-purple-400': currentView === 'editor'}">
-                            <i class="ph ph-film-strip text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Editor</span>
+                        <button @click="currentView = 'editor'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'editor', 'text-slate-500 hover:text-white': currentView !== 'editor', 'text-purple-400': currentView === 'editor'}">
+                            <i class="ph ph-film-strip text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Editor</span>
                         </button>
 
-                        <button @click="currentView = 'enviar'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
-                            :class="{'active': currentView === 'enviar', 'text-slate-500 hover:text-white': currentView !== 'enviar', 'text-indigo-400': currentView === 'enviar'}">
-                            <i class="ph ph-paper-plane-right text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Enviar Vídeos</span>
+                        <button @click="currentView = 'enviar'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'enviar', 'text-slate-500 hover:text-white': currentView !== 'enviar', 'text-indigo-400': currentView === 'enviar'}">
+                            <i class="ph ph-paper-plane-right text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Enviar Vídeos</span>
                         </button>
 
-                        <button @click="currentView = 'concluidos'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
-                            :class="{'active': currentView === 'concluidos', 'text-slate-500 hover:text-white': currentView !== 'concluidos', 'text-green-400': currentView === 'concluidos'}">
-                            <i class="ph ph-check-circle text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Concluídos</span>
+                        <button @click="currentView = 'concluidos'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'concluidos', 'text-slate-500 hover:text-white': currentView !== 'concluidos', 'text-green-400': currentView === 'concluidos'}">
+                            <i class="ph ph-check-circle text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Concluídos</span>
                         </button>
 
-                        <div class="pt-4 pb-2">
-                            <div class="h-px bg-white/5 mx-2"></div>
-                        </div>
+                        <div class="pt-4 pb-2"><div class="h-px bg-white/5 mx-2"></div></div>
 
-                        <button @click="currentView = 'analytics'"
-                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
-                            :class="{'active': currentView === 'analytics', 'text-slate-500 hover:text-white': currentView !== 'analytics', 'text-nomo-cyan': currentView === 'analytics'}">
-                            <i class="ph ph-chart-bar text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Analytics</span>
+                        <button @click="currentView = 'analytics'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'analytics', 'text-slate-500 hover:text-white': currentView !== 'analytics', 'text-nomo-cyan': currentView === 'analytics'}">
+                            <i class="ph ph-chart-bar text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Analytics</span>
                         </button>
 
                         <a href="editsite.html" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group border border-transparent nav-item-fluid mt-4">
-                            <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Editor Site</span>
+                            <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Editor Site</span>
                         </a>
 
                         <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group border border-transparent nav-item-fluid">
-                            <i class="ph ph-google-drive-logo text-xl relative z-10"></i>
-                            <span class="hidden lg:block ml-3 font-medium relative z-10">Drive Prévias</span>
+                            <i class="ph ph-google-drive-logo text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Drive Prévias</span>
                         </a>
                     </nav>
                 </div>
 
-                <!-- User Profile & Logout -->
                 <div class="p-4 border-t border-white/5 bg-black/20">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-gradient-to-r from-nomo-cyan to-blue-600 p-[1px]">
@@ -373,9 +335,7 @@
                             <p class="text-xs font-bold text-white">{{ userDisplayName }}</p>
                             <p class="text-[10px] text-nomo-cyan">Nomo Headquarters</p>
                         </div>
-                        <button @click="logout" class="text-slate-500 hover:text-red-400 transition-colors" title="Sair">
-                            <i class="ph ph-sign-out text-lg"></i>
-                        </button>
+                        <button @click="logout" class="text-slate-500 hover:text-red-400 transition-colors" title="Sair"><i class="ph ph-sign-out text-lg"></i></button>
                     </div>
                 </div>
             </aside>
@@ -395,42 +355,82 @@
                         </h2>
                     </div>
 
-                    <div class="flex items-center w-full max-w-md bg-black/30 border border-white/10 rounded-full px-5 py-2.5 focus-within:border-nomo-accent/50 focus-within:shadow-neon transition-all mx-4">
-                        <i class="ph ph-magnifying-glass text-nomo-accent text-lg"></i>
-                        <input type="text" v-model="search" placeholder="Buscar..." 
-                               class="bg-transparent border-none outline-none text-sm ml-3 w-full text-white placeholder-slate-500">
-                    </div>
+                    <!-- Busca e Filtros -->
+                    <div class="flex items-center gap-4 flex-1 justify-end">
+                        
+                        <!-- Ordenação Customizada -->
+                        <div class="relative group" v-click-outside="closeSortMenu">
+                            <button @click="showSortMenu = !showSortMenu" class="flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white hover:border-nomo-accent/50 hover:bg-white/5 transition-all shadow-lg">
+                                <i class="ph ph-sort-ascending text-nomo-accent text-lg"></i>
+                                <span class="font-medium text-slate-200">{{ sortLabels[sortOption] }}</span>
+                                <i class="ph ph-caret-down text-slate-400 transition-transform duration-300" :class="{'rotate-180': showSortMenu}"></i>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <transition name="dropdown">
+                                <div v-if="showSortMenu" class="absolute right-0 top-full mt-2 w-52 bg-[#0c0814]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
+                                    <div class="p-1">
+                                        <button @click="selectSort('newest')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'newest' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
+                                            <span>Mais Recentes</span>
+                                            <i v-if="sortOption === 'newest'" class="ph ph-check text-nomo-accent"></i>
+                                        </button>
+                                        <button @click="selectSort('oldest')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'oldest' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
+                                            <span>Mais Antigos</span>
+                                            <i v-if="sortOption === 'oldest'" class="ph ph-check text-nomo-accent"></i>
+                                        </button>
+                                        <button @click="selectSort('az')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'az' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
+                                            <span>Alfabética (A-Z)</span>
+                                            <i v-if="sortOption === 'az'" class="ph ph-check text-nomo-accent"></i>
+                                        </button>
+                                        <button @click="selectSort('za')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'za' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
+                                            <span>Alfabética (Z-A)</span>
+                                            <i v-if="sortOption === 'za'" class="ph ph-check text-nomo-accent"></i>
+                                        </button>
+                                        <div class="h-px bg-white/5 my-1"></div>
+                                        <button @click="selectSort('priority')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'priority' ? 'bg-red-500/20 text-red-300' : 'text-slate-400 hover:bg-red-500/10 hover:text-red-400'">
+                                            <span>Prioridade Alta</span>
+                                            <i v-if="sortOption === 'priority'" class="ph ph-fire text-red-500"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
 
-                    <button @click="fetchData" class="group relative p-3 rounded-full hover:bg-white/5 transition-all">
-                        <i class="ph ph-arrows-clockwise text-xl text-slate-400 group-hover:text-nomo-cyan" :class="{'animate-spin': loading}"></i>
-                    </button>
+                        <div class="flex items-center w-full max-w-xs bg-black/30 border border-white/10 rounded-full px-5 py-2.5 focus-within:border-nomo-accent/50 focus-within:shadow-neon transition-all">
+                            <i class="ph ph-magnifying-glass text-nomo-accent text-lg"></i>
+                            <input type="text" v-model="search" placeholder="Buscar..." class="bg-transparent border-none outline-none text-sm ml-3 w-full text-white placeholder-slate-500">
+                        </div>
+
+                        <div class="flex items-center gap-3 border-l border-white/10 pl-4">
+                            <div class="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-black/40 px-3 py-1.5 rounded-full border border-green-500/20 text-green-400">
+                                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
+                                Live
+                            </div>
+                            <button @click="fetchData" class="group relative p-3 rounded-full hover:bg-white/5 transition-all"><i class="ph ph-arrows-clockwise text-xl text-slate-400 group-hover:text-nomo-cyan" :class="{'animate-spin': loading}"></i></button>
+                        </div>
+                    </div>
                 </header>
 
-                <!-- Content Views (Tabelas e Cards) -->
+                <!-- Content Views -->
                 <div v-if="currentView !== 'analytics'" class="flex-1 overflow-auto p-8 scroll-smooth">
-                    
                     <!-- KPI Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
                             <p class="text-xs font-bold text-slate-400 uppercase mb-1">Leads na Tela</p>
                             <h3 class="font-display text-3xl font-bold text-white">{{ filteredLeads.length }}</h3>
                         </div>
-                        
                         <div v-if="currentView === 'dev' || currentView === 'geral'" class="glass-panel p-5 rounded-2xl relative overflow-hidden border-blue-500/20">
                             <p class="text-xs font-bold text-blue-400 uppercase mb-1">Websites Pendentes</p>
                             <h3 class="font-display text-3xl font-bold text-white">{{ stats.devPending }}</h3>
                         </div>
-
                         <div v-if="currentView === 'editor' || currentView === 'geral'" class="glass-panel p-5 rounded-2xl relative overflow-hidden border-purple-500/20">
                             <p class="text-xs font-bold text-purple-400 uppercase mb-1">Vídeos Pendentes</p>
                             <h3 class="font-display text-3xl font-bold text-white">{{ stats.videoPending }}</h3>
                         </div>
-
                         <div v-if="currentView === 'enviar' || currentView === 'geral'" class="glass-panel p-5 rounded-2xl relative overflow-hidden border-indigo-500/20">
                             <p class="text-xs font-bold text-indigo-400 uppercase mb-1">Prontos p/ Enviar</p>
                             <h3 class="font-display text-3xl font-bold text-white">{{ stats.readyToSend }}</h3>
                         </div>
-
                         <div class="glass-panel p-5 rounded-2xl relative overflow-hidden border-green-500/20">
                             <p class="text-xs font-bold text-green-400 uppercase mb-1">Total Concluídos</p>
                             <h3 class="font-display text-3xl font-bold text-white">{{ stats.closed }}</h3>
@@ -477,10 +477,7 @@
                                                     {{ lead['STATUS WHATSAPP'] || 'A Contactar' }}
                                                 </div>
                                                 <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                                    <div class="h-full rounded-full transition-all duration-1000"
-                                                         :class="getProgressColor(lead['STATUS WHATSAPP'])"
-                                                         :style="{ width: getProgress(lead['STATUS WHATSAPP']) + '%' }">
-                                                    </div>
+                                                    <div class="h-full rounded-full transition-all duration-1000" :class="getProgressColor(lead['STATUS WHATSAPP'])" :style="{ width: getProgress(lead['STATUS WHATSAPP']) + '%' }"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -492,11 +489,7 @@
                                         </td>
                                         <td class="px-6 py-4 text-xs text-slate-400">{{ lead['LOCAL'] || '-' }}</td>
                                         <td class="px-6 py-4 text-right flex items-center justify-end h-full">
-                                            <a v-if="currentView === 'enviar' && getWhatsappLink(lead)"
-                                               :href="getWhatsappLink(lead)" target="_blank" @click.stop
-                                               class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20">
-                                               <i class="ph ph-whatsapp-logo text-lg"></i> Enviar Agora
-                                            </a>
+                                            <a v-if="currentView === 'enviar' && getWhatsappLink(lead)" :href="getWhatsappLink(lead)" target="_blank" @click.stop class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20"><i class="ph ph-whatsapp-logo text-lg"></i> Enviar Agora</a>
                                             <i class="ph ph-caret-right text-slate-600 group-hover:text-white"></i>
                                         </td>
                                     </tr>
@@ -512,49 +505,40 @@
 
                 <!-- ANALYTICS VIEW -->
                 <div v-else class="flex-1 overflow-auto p-8 scroll-smooth">
+                    <!-- ... analytics content mantido ... -->
                     <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="glass p-6 rounded-2xl">
-                            <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2">
-                                <i class="ph ph-funnel text-lg text-nomo-accent"></i> Funil de Conversão
-                            </h3>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2"><i class="ph ph-funnel text-lg text-nomo-accent"></i> Funil de Conversão</h3>
                             <div class="space-y-4">
                                 <div v-for="(count, status) in analytics.funnel" :key="status" class="relative">
-                                    <div class="flex justify-between text-xs text-slate-300 mb-1">
-                                        <span>{{ status }}</span>
-                                        <span class="font-bold">{{ count }}</span>
-                                    </div>
-                                    <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-gradient-to-r from-nomo-accent to-nomo-cyan bar-fill" :style="{width: (count / stats.total * 100) + '%'}"></div>
-                                    </div>
+                                    <div class="flex justify-between text-xs text-slate-300 mb-1"><span>{{ status }}</span><span class="font-bold">{{ count }}</span></div>
+                                    <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-nomo-accent to-nomo-cyan bar-fill" :style="{width: (count / stats.total * 100) + '%'}"></div></div>
                                 </div>
                             </div>
                         </div>
                         <div class="glass p-6 rounded-2xl">
-                            <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2">
-                                <i class="ph ph-code text-lg text-green-400"></i> Produção & Editoria
-                            </h3>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2"><i class="ph ph-code text-lg text-green-400"></i> Produção & Editoria</h3>
                             <div class="grid grid-cols-2 gap-4">
-                                 <div v-for="(count, status) in analytics.dev" :key="status" class="bg-white/5 p-4 rounded-xl border border-white/5">
-                                    <div class="text-2xl font-display font-bold text-white">{{ count }}</div>
-                                    <div class="text-xs text-slate-400 uppercase mt-1">{{ status }}</div>
-                                 </div>
+                                 <div v-for="(count, status) in analytics.dev" :key="status" class="bg-white/5 p-4 rounded-xl border border-white/5"><div class="text-2xl font-display font-bold text-white">{{ count }}</div><div class="text-xs text-slate-400 uppercase mt-1">{{ status }}</div></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </main>
 
-            <!-- DRAWER DE EDIÇÃO -->
+            <!-- DRAWER DE EDIÇÃO (OTIMIZADO) -->
             <transition name="slide-in">
                 <div v-if="selectedLead" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
-                    <!-- Drawer Header e Content (Mantidos Igual) -->
+                    <!-- Header -->
                     <div class="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-xl">
                         <div>
                             <h2 class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
                                 <span class="text-nomo-accent">#</span> {{ selectedLead['NOME EMPRESA'] }}
                             </h2>
-                            <div class="flex gap-2 mt-1">
-                                 <span class="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded border border-white/20 uppercase">{{ currentView }}</span>
+                            <!-- AÇÕES RÁPIDAS NO TOPO -->
+                            <div class="flex gap-2 mt-3">
+                                <a v-if="getWhatsappLink(selectedLead)" :href="getWhatsappLink(selectedLead)" target="_blank" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20 text-xs font-bold transition-all"><i class="ph ph-whatsapp-logo text-lg"></i> Chamar</a>
+                                <a v-if="selectedLead['LINK MAPS']" :href="selectedLead['LINK MAPS']" target="_blank" class="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/20 text-xs font-bold transition-all"><i class="ph ph-map-pin text-lg"></i> Mapa</a>
                             </div>
                         </div>
                         <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all">
@@ -562,35 +546,79 @@
                         </button>
                     </div>
 
-                    <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                        <!-- Campos do Formulário -->
-                        <section>
-                            <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <i class="ph ph-whatsapp-logo text-lg"></i> Funil WhatsApp
+                    <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                        
+                        <!-- CARD 1: INTELIGÊNCIA (OSINT) -->
+                        <section class="bg-gradient-to-br from-indigo-900/10 to-nomo-surface border border-indigo-500/20 p-5 rounded-2xl">
+                            <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i class="ph ph-detective text-lg"></i> Inteligência & Redes
                             </h3>
-                            <div class="flex flex-wrap gap-2">
-                                <button v-for="opt in funnelOptions" :key="opt" @click="selectedLead['STATUS WHATSAPP'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate flex items-center gap-2" :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-white/5 text-slate-400'"><span>{{ opt }}</span></button>
+                            <div class="grid grid-cols-3 gap-2 mb-4">
+                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'instagram')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/50 rounded-xl transition-all group">
+                                    <i class="ph ph-instagram-logo text-lg text-slate-400 group-hover:text-pink-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Instagram</span>
+                                </button>
+                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'linkedin')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 rounded-xl transition-all group">
+                                    <i class="ph ph-linkedin-logo text-lg text-slate-400 group-hover:text-blue-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">LinkedIn</span>
+                                </button>
+                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'google')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 rounded-xl transition-all group">
+                                    <i class="ph ph-google-logo text-lg text-slate-400 group-hover:text-green-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Geral</span>
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <input v-model="selectedLead['WEBSITE ATUAL']" type="text" placeholder="Cole o link social encontrado..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none">
+                                <a v-if="selectedLead['WEBSITE ATUAL']" :href="selectedLead['WEBSITE ATUAL']" target="_blank" class="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all"><i class="ph ph-arrow-square-out text-lg"></i></a>
+                            </div>
+                        </section>
+
+                        <!-- CARD 2: COMERCIAL -->
+                        <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                            <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-lg"></i> Pipeline Comercial</h3>
+                            
+                            <div class="mb-4">
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status WhatsApp</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <button v-for="opt in funnelOptions" :key="opt" @click="selectedLead['STATUS WHATSAPP'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium truncate" :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label>
+                                    <select v-model="selectedLead['STATUS LIGAÇÃO']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent">
+                                        <option v-for="opt in callOptions" :key="opt" :value="opt">{{ opt }}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label>
+                                    <select v-model="selectedLead['PRIORIDADE (DEV)']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent">
+                                        <option v-for="opt in priorityOptions" :key="opt" :value="opt">{{ opt }}</option>
+                                    </select>
+                                </div>
                             </div>
                         </section>
                         
-                        <div class="grid grid-cols-1 gap-6">
-                            <section class="bg-blue-500/5 p-4 rounded-xl border border-blue-500/10">
+                        <!-- CARD 3: PRODUÇÃO -->
+                        <div class="grid grid-cols-1 gap-4">
+                            <section class="bg-blue-900/10 p-5 rounded-2xl border border-blue-500/20">
                                 <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4"><i class="ph ph-laptop"></i> Desenvolvimento</h3>
-                                <div class="flex flex-wrap gap-2"><button v-for="opt in siteOptions" :key="opt" @click="selectedLead['STATUS DEV'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="selectedLead['STATUS DEV'] === opt ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-white/5 text-slate-400'">{{ opt }}</button></div>
+                                <div class="flex flex-wrap gap-2"><button v-for="opt in siteOptions" :key="opt" @click="selectedLead['STATUS DEV'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="selectedLead['STATUS DEV'] === opt ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
                             </section>
-                            <section class="bg-purple-500/5 p-4 rounded-xl border border-purple-500/10">
-                                <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4"><i class="ph ph-film-strip"></i> Editor</h3>
-                                <div class="flex flex-wrap gap-2 mb-4"><button v-for="opt in videoOptions" :key="opt" @click="selectedLead['STATUS DEV'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="selectedLead['STATUS DEV'] === opt ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-white/5 text-slate-400'">{{ opt }}</button></div>
-                                <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" placeholder="Link da prévia..." class="w-full bg-black/40 border border-white/10 rounded-lg py-2.5 px-3 text-sm text-white focus:border-purple-500 outline-none">
+                            <section class="bg-purple-900/10 p-5 rounded-2xl border border-purple-500/20">
+                                <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4"><i class="ph ph-film-strip"></i> Editor & Vídeo</h3>
+                                <div class="flex flex-wrap gap-2 mb-4"><button v-for="opt in videoOptions" :key="opt" @click="selectedLead['STATUS DEV'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="selectedLead['STATUS DEV'] === opt ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
+                                <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" placeholder="Cole o link do Drive da prévia..." class="w-full bg-black/40 border border-white/10 rounded-lg py-2.5 px-3 text-xs text-white focus:border-purple-500 outline-none">
                             </section>
                         </div>
                         
-                        <section class="space-y-4 pt-4 border-t border-white/5">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Telefone</label><input v-model="selectedLead['TEL. NUMÉRICO']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none"></div>
-                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Link WhatsApp</label><input v-model="selectedLead['LINK WHATSAPP']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none"></div>
+                        <!-- CARD 4: DADOS CADASTRAIS -->
+                        <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4"><i class="ph ph-address-book"></i> Dados de Contato</h3>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Telefone</label><input v-model="selectedLead['TEL. NUMÉRICO']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></div>
+                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Google Maps</label><input v-model="selectedLead['LINK MAPS']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></div>
                             </div>
-                            <textarea v-model="selectedLead['OBSERVAÇÕES']" rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none"></textarea>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Observações</label>
+                            <textarea v-model="selectedLead['OBSERVAÇÕES']" rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></textarea>
                         </section>
                     </div>
 
@@ -628,32 +656,33 @@
         createApp({
             data() {
                 return {
-                    // AUTHENTICATION
                     showLogin: true,
                     isAuthenticated: false,
                     showLoader: false,
                     startFadeOut: false,
-                    isFadingOut: false, // Alterado para animação de fade
+                    isFadingOut: false, 
                     loginError: '',
                     currentUser: '',
-                    
                     loginForm: { user: '', pass: '' },
-
-                    // DATABASE DE USUÁRIOS
-                    validUsers: {
-                        'admin': '2607',
-                        'jean': '1102',
-                        'lyzz': '2607',
-                        'dvyd': '2607'
-                    },
+                    validUsers: { 'admin': '2607', 'jean': '1104', 'lyzz': '2607', 'dvyd': '2607' },
 
                     currentView: 'geral', 
                     leads: [],
                     search: '',
+                    sortOption: 'newest', // Opção de ordenação
+                    showSortMenu: false, // Controle do menu dropdown
+                    sortLabels: {
+                        'newest': 'Mais Recentes',
+                        'oldest': 'Mais Antigos',
+                        'az': 'A-Z',
+                        'za': 'Z-A',
+                        'priority': 'Prioridade'
+                    },
                     loading: true,
                     saving: false,
                     selectedLead: null,
                     toast: { show: false, title: '', message: '', type: 'success' },
+                    syncInterval: null,
                     
                     funnelOptions: [ "A Contactar", "📞 Mensagem enviada", "❌ WP Inválido", "📩 Vídeo Enviado", "💬 Em Negociação", "👀 Remarketing 1", "👻 Remarketing 2", "❄️ Vácuo Eterno", "💰 FECHADO (Venda)" ],
                     callOptions: [ "A Ligar", "📞 Secretária (Encaminhar)", "📠 Dono (Aceitou)", "🚫 Dono (Recusou)", "📫 Caixa Postal", "❌ Número Inválido" ],
@@ -663,8 +692,22 @@
                     columns: [ 'img', 'DATA', 'NOME EMPRESA', 'QTD AVALIAÇÕES', 'LINK MAPS', 'TEL. NUMÉRICO', 'OBSERVAÇÕES', 'validação whatsapp', 'ANÁLISE SITE', 'LINK WHATSAPP', 'STATUS WHATSAPP', 'STATUS LIGAÇÃO', 'PRIORIDADE (DEV)', 'STATUS DEV', 'LINK VÍDEO PRÉVIA', 'WEBSITE ATUAL', 'DUPLICADO?', 'LOCAL' ]
                 }
             },
+            directives: {
+                'click-outside': {
+                    mounted(el, binding) {
+                        el.clickOutsideEvent = function(event) {
+                            if (!(el === event.target || el.contains(event.target))) {
+                                binding.value(event);
+                            }
+                        };
+                        document.body.addEventListener('click', el.clickOutsideEvent);
+                    },
+                    unmounted(el) {
+                        document.body.removeEventListener('click', el.clickOutsideEvent);
+                    }
+                }
+            },
             computed: {
-                // EXIBIÇÃO DE NOME PERSONALIZADA
                 userDisplayName() {
                     const u = this.currentUser.toLowerCase();
                     if (u === 'admin' || u === 'lyzz' || u === 'dvyd') {
@@ -675,20 +718,45 @@
                     }
                     return 'Usuário Nomo';
                 },
-                // ... (Filtros de Leads e Stats mantidos iguais) ...
                 filteredLeads() {
-                    let items = this.leads;
+                    let items = [...this.leads]; // Copia para não mutar original
+
+                    // 1. Filtro de Busca
                     if (this.search) {
                         const term = this.search.toLowerCase();
                         items = items.filter(l => (l['NOME EMPRESA'] && l['NOME EMPRESA'].toLowerCase().includes(term)) || (l['LOCAL'] && l['LOCAL'].toLowerCase().includes(term)));
                     }
+
+                    // 2. Filtro de Abas
                     const isCompleted = (l) => { const wpp = l['STATUS WHATSAPP'] || ''; return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO'); };
-                    if (this.currentView === 'concluidos') return items.filter(l => isCompleted(l));
-                    if (this.currentView === 'dev') return items.filter(l => !isCompleted(l) && !(l['STATUS DEV']||'').includes('Site Pronto'));
-                    if (this.currentView === 'editor') return items.filter(l => { const dev = l['STATUS DEV'] || ''; return !isCompleted(l) && (dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando')) && !dev.includes('Vídeo Pronto'); });
-                    if (this.currentView === 'enviar') return items.filter(l => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return !isCompleted(l) && dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado'); });
+                    if (this.currentView === 'concluidos') items = items.filter(l => isCompleted(l));
+                    else if (this.currentView === 'dev') items = items.filter(l => !isCompleted(l) && !(l['STATUS DEV']||'').includes('Site Pronto'));
+                    else if (this.currentView === 'editor') items = items.filter(l => { const dev = l['STATUS DEV'] || ''; return !isCompleted(l) && (dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando')) && !dev.includes('Vídeo Pronto'); });
+                    else if (this.currentView === 'enviar') items = items.filter(l => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return !isCompleted(l) && dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado'); });
+
+                    // 3. Ordenação (Sorting)
+                    items.sort((a, b) => {
+                        if (this.sortOption === 'az') return (a['NOME EMPRESA'] || '').localeCompare(b['NOME EMPRESA'] || '');
+                        if (this.sortOption === 'za') return (b['NOME EMPRESA'] || '').localeCompare(a['NOME EMPRESA'] || '');
+                        
+                        if (this.sortOption === 'priority') {
+                            const pA = a['PRIORIDADE (DEV)'] || '';
+                            const pB = b['PRIORIDADE (DEV)'] || '';
+                            if (pA.includes('ALTA') && !pB.includes('ALTA')) return -1;
+                            if (!pA.includes('ALTA') && pB.includes('ALTA')) return 1;
+                            return 0;
+                        }
+
+                        // Por padrão: Mais Recente (baseado na linha da planilha, assumindo ordem cronológica de inserção)
+                        if (this.sortOption === 'newest') return b._row - a._row;
+                        if (this.sortOption === 'oldest') return a._row - b._row;
+                        
+                        return 0;
+                    });
+
                     return items;
                 },
+                // ... stats e analytics iguais ...
                 stats() {
                     const total = this.leads.length;
                     const closed = this.leads.filter(l => (l['STATUS WHATSAPP']||'').includes('FECHADO') || (l['STATUS WHATSAPP']||'').includes('Vídeo Enviado')).length;
@@ -704,79 +772,58 @@
                 }
             },
             methods: {
+                selectSort(option) {
+                    this.sortOption = option;
+                    this.showSortMenu = false;
+                },
+                closeSortMenu() {
+                    this.showSortMenu = false;
+                },
                 handleLogin() {
                     const u = this.loginForm.user.toLowerCase().trim();
                     const p = this.loginForm.pass.trim();
-
                     if (this.validUsers[u] && this.validUsers[u] === p) {
                         this.loginError = '';
                         this.currentUser = u;
-                        this.isFadingOut = true; // Inicia animação lenta de saída
-                        
-                        // SALVAR NO LOCALSTORAGE (Com timestamp)
+                        this.isFadingOut = true; 
                         localStorage.setItem('nomo_auth', JSON.stringify({ user: u, timestamp: Date.now() }));
-
-                        setTimeout(() => {
-                            this.showLogin = false;
-                            this.showLoader = true;
-                            this.isAuthenticated = true; // Prepara o app
-                            this.startAppFlow(); 
-                        }, 1500); // 1.5s de animação de saída
+                        setTimeout(() => { this.showLogin = false; this.showLoader = true; this.isAuthenticated = true; this.startAppFlow(); }, 1500); 
                     } else {
                         this.loginError = 'ACESSO NEGADO. CREDENCIAIS INVÁLIDAS.';
                         this.loginForm.pass = '';
                     }
                 },
-                
                 checkPersistence() {
                     const stored = localStorage.getItem('nomo_auth');
                     if (stored) {
                         try {
                             const data = JSON.parse(stored);
-                            const oneHour = 60 * 60 * 1000;
-                            const now = Date.now();
-
-                            // Checa expiração de 1 hora
-                            if (now - data.timestamp > oneHour) {
-                                this.logout(); // Expired
-                                return;
-                            }
-
-                            // Login válido e dentro do prazo
+                            if (Date.now() - data.timestamp > 3600000) { this.logout(); return; } // 1h Expiração
                             this.currentUser = data.user;
                             this.showLogin = false;
                             this.isAuthenticated = true;
-                            this.startFadeOut = true; // IMPORTANTE: Torna o app visível imediatamente
-                            this.fetchData(); // Carrega dados
-                        } catch(e) {
-                            localStorage.removeItem('nomo_auth');
-                        }
+                            this.startFadeOut = true; 
+                            this.startAppFlow();
+                        } catch(e) { localStorage.removeItem('nomo_auth'); }
                     }
                 },
-
-                logout() {
-                    localStorage.removeItem('nomo_auth');
-                    location.reload();
-                },
-
+                logout() { localStorage.removeItem('nomo_auth'); location.reload(); },
                 startAppFlow() {
                     this.fetchData();
-                    if (this.showLoader) {
-                        setTimeout(() => {
-                            this.startFadeOut = true;
-                            setTimeout(() => { this.showLoader = false; }, 500);
-                        }, 3000);
-                    }
+                    this.syncInterval = setInterval(() => { this.silentRefresh(); }, 10000);
+                    if (this.showLoader) { setTimeout(() => { this.startFadeOut = true; setTimeout(() => { this.showLoader = false; }, 500); }, 3000); }
                 },
-
-                async fetchData() {
-                    this.loading = true;
+                async silentRefresh() {
+                    if(this.saving) return; 
                     try {
                         const response = await fetch(API_URL);
-                        const data = await response.json();
-                        this.leads = data;
-                    } catch (error) { this.showToast("Erro", "Falha ao carregar dados.", "error"); } 
-                    finally { this.loading = false; }
+                        const newData = await response.json();
+                        if (JSON.stringify(this.leads) !== JSON.stringify(newData)) { this.leads = newData; }
+                    } catch (e) {}
+                },
+                async fetchData() {
+                    this.loading = true;
+                    try { const response = await fetch(API_URL); this.leads = await response.json(); } catch (error) { this.showToast("Erro", "Falha ao carregar dados.", "error"); } finally { this.loading = false; }
                 },
                 openDrawer(lead) { this.selectedLead = JSON.parse(JSON.stringify(lead)); },
                 closeDrawer() { this.selectedLead = null; },
@@ -791,6 +838,13 @@
                         this.closeDrawer();
                     } catch (error) { this.showToast("Erro", "Não foi possível salvar.", "error"); } 
                     finally { this.saving = false; }
+                },
+                openSearch(companyName, type) {
+                    if (!companyName) return;
+                    let query = `"${companyName}"`; 
+                    if (type === 'instagram') query += ' site:instagram.com';
+                    else if (type === 'linkedin') query += ' site:linkedin.com';
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
                 },
                 getStatusStyle(status) {
                     if (!status) return 'bg-white/5 text-slate-400 border-white/10';
@@ -838,10 +892,8 @@
                 },
                 showToast(title, message, type) { this.toast = { show: true, title, message, type }; setTimeout(() => this.toast.show = false, 3000); }
             },
-            mounted() {
-                // Checa se já está logado
-                this.checkPersistence();
-            }
+            beforeUnmount() { if (this.syncInterval) clearInterval(this.syncInterval); },
+            mounted() { this.checkPersistence(); }
         }).mount('#app');
     </script>
 </body>
