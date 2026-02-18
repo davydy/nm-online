@@ -43,14 +43,9 @@
                         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                     },
                     animation: {
-                        'fade-out': 'fadeOut 0.5s ease-out forwards',
                         'aurora': 'aurora 20s infinite alternate',
                     },
                     keyframes: {
-                        fadeOut: {
-                            '0%': { opacity: '1' },
-                            '100%': { opacity: '0', visibility: 'hidden' },
-                        },
                         aurora: {
                             '0%': { backgroundPosition: '0% 50%' },
                             '100%': { backgroundPosition: '100% 50%' },
@@ -108,8 +103,6 @@
             font-weight: 600;
         }
 
-        .bar-fill { transition: width 1s ease-out; }
-
         .loader-overlay {
             position: fixed;
             inset: 0;
@@ -118,9 +111,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        .loader-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
         }
 
-        /* --- LOGIN STYLES REFEITOS --- */
+        /* --- LOGIN STYLES --- */
         .login-wrapper {
             position: fixed;
             inset: 0;
@@ -134,8 +132,27 @@
             transition: background 1.5s ease; 
         }
 
-        .login-wrapper.void-active {
-            background: #000000 !important;
+        /* Animação de saída LENTA do Login */
+        .login-wrapper.fading-out .glass-metallic-card {
+            animation: slowFadeOut 1.5s forwards cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .login-wrapper.fading-out {
+            pointer-events: none;
+            background: #000000; /* Fade para preto do fundo */
+        }
+
+        @keyframes slowFadeOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                filter: blur(0px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+                filter: blur(15px);
+            }
         }
 
         .glass-metallic-card {
@@ -146,78 +163,62 @@
             border-top: 1px solid rgba(255, 255, 255, 0.3);
             border-left: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,255,255,0.05);
-            transition: all 0.5s ease;
         }
 
-        /* --- ANIMAÇÃO DE DESINTEGRAÇÃO (PÓ) --- */
-        .disintegrating .login-element {
-            animation: dustDissolve 1.5s forwards cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        
-        /* Atrasos aleatórios leves para cada elemento parecer orgânico */
-        .disintegrating .explode-1 { animation-delay: 0ms; }
-        .disintegrating .explode-2 { animation-delay: 50ms; }
-        .disintegrating .explode-3 { animation-delay: 100ms; }
-        .disintegrating .explode-4 { animation-delay: 150ms; }
-        .disintegrating .explode-5 { animation-delay: 200ms; }
-
-        @keyframes dustDissolve {
-            0% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-                filter: blur(0) grayscale(0%);
-            }
-            20% {
-                /* Pequena vibração antes de desintegrar */
-                transform: translateY(2px) scale(1.02);
-                opacity: 0.9;
-                filter: blur(1px);
-            }
-            100% {
-                /* Vira pó: sobe, perde cor, desfoca e some */
-                transform: translateY(-40px) scale(1.1);
-                opacity: 0;
-                filter: blur(20px) grayscale(100%) brightness(200%);
-            }
-        }
-
-        /* --- ANIMAÇÃO DAS ABAS (VIDRO MOLHADO REFEITA) --- */
-        .nav-item-animated {
+        /* --- NOVAS ANIMAÇÕES DAS ABAS (FLUIDO CONTÍNUO) --- */
+        .nav-item-fluid {
             position: relative;
             overflow: hidden;
-            transition: background 0.3s;
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.4s ease;
         }
-        
-        /* Brilho escorrido contínuo e suave */
-        .nav-item-animated::before {
+
+        /* Efeito de borda fluida e brilho interno */
+        .nav-item-fluid::before {
             content: '';
             position: absolute;
-            top: -150%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                to bottom right,
-                transparent 40%,
-                rgba(255, 255, 255, 0.03) 45%,
-                rgba(255, 255, 255, 0.08) 50%,
-                rgba(255, 255, 255, 0.03) 55%,
-                transparent 60%
+            inset: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(168, 85, 247, 0.0) 20%, 
+                rgba(168, 85, 247, 0.1) 50%, 
+                rgba(168, 85, 247, 0.0) 80%, 
+                transparent 100%
             );
-            transform: rotate(-15deg);
-            animation: wetGlassFlow 6s infinite ease-in-out;
-            pointer-events: none;
+            transform: skewX(-20deg) translateX(-150%);
+            transition: none; /* Controlado via animação */
+            animation: shimmerFlow 3s infinite ease-in-out;
         }
 
-        @keyframes wetGlassFlow {
-            0% { transform: translateY(-50%) rotate(-15deg); }
-            100% { transform: translateY(100%) rotate(-15deg); }
+        .nav-item-fluid:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(168, 85, 247, 0.3);
+            transform: translateX(5px);
         }
 
-        /* Hover glow nas abas */
-        .nav-item-animated:hover i {
-            filter: drop-shadow(0 0 8px currentColor);
-            transition: filter 0.3s ease;
+        /* Animação Contínua Fluida */
+        @keyframes shimmerFlow {
+            0% { transform: skewX(-20deg) translateX(-150%); }
+            50% { transform: skewX(-20deg) translateX(150%); }
+            100% { transform: skewX(-20deg) translateX(150%); } /* Pausa no fim */
+        }
+
+        /* Estado Ativo da Aba */
+        .nav-item-fluid.active {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+        }
+        
+        .nav-item-fluid.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #a855f7;
+            box-shadow: 0 0 10px #a855f7;
         }
 
         [v-cloak] { display: none; }
@@ -228,27 +229,27 @@
     <div id="app" class="flex w-full h-full" v-cloak>
         
         <!-- TELA DE LOGIN -->
-        <div v-if="showLogin" class="login-wrapper" :class="{'void-active': isDisintegrating}">
-            <div class="glass-metallic-card p-10 rounded-3xl w-full max-w-md mx-4 relative overflow-hidden login-content" :class="{'disintegrating': isDisintegrating}">
+        <div v-if="showLogin" class="login-wrapper" :class="{'fading-out': isFadingOut}">
+            <div class="glass-metallic-card p-10 rounded-3xl w-full max-w-md mx-4 relative overflow-hidden login-content">
                 
                 <div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
 
                 <div class="relative z-10 flex flex-col items-center">
-                    <!-- Logo (Explode 1) -->
-                    <div class="w-24 h-24 mb-6 relative group login-element explode-1">
+                    <!-- Logo -->
+                    <div class="w-24 h-24 mb-6 relative group">
                         <div class="absolute inset-0 bg-nomo-accent blur-2xl opacity-30 rounded-full animate-pulse"></div>
                         <img src="logo.png" class="w-full h-full object-contain drop-shadow-2xl relative z-10">
                     </div>
 
-                    <!-- Titulo (Explode 2) -->
-                    <div class="text-center mb-8 login-element explode-2">
+                    <!-- Titulo -->
+                    <div class="text-center mb-8">
                         <h2 class="font-display text-3xl font-bold text-white tracking-tight">NOMO <span class="text-nomo-accent">SYSTEM</span></h2>
                         <p class="text-slate-400 text-xs uppercase tracking-widest">Acesso Restrito</p>
                     </div>
 
                     <!-- Form -->
                     <div class="w-full space-y-4">
-                        <div class="space-y-1 login-element explode-3">
+                        <div class="space-y-1">
                             <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Usuário</label>
                             <div class="relative">
                                 <i class="ph ph-user absolute left-3 top-3 text-slate-500"></i>
@@ -258,7 +259,7 @@
                             </div>
                         </div>
 
-                        <div class="space-y-1 login-element explode-4">
+                        <div class="space-y-1">
                             <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Senha</label>
                             <div class="relative">
                                 <i class="ph ph-lock-key absolute left-3 top-3 text-slate-500"></i>
@@ -268,12 +269,12 @@
                             </div>
                         </div>
 
-                        <div v-if="loginError" class="text-red-500 text-xs text-center font-bold animate-pulse login-element explode-5">
+                        <div v-if="loginError" class="text-red-500 text-xs text-center font-bold animate-pulse">
                             {{ loginError }}
                         </div>
 
                         <button @click="handleLogin" 
-                            class="login-element explode-5 w-full mt-6 py-3 bg-gradient-to-r from-nomo-accent to-indigo-600 hover:from-nomo-accent hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-nomo-accent/20 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-nomo-accent/40">
+                            class="w-full mt-6 py-3 bg-gradient-to-r from-nomo-accent to-indigo-600 hover:from-nomo-accent hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-nomo-accent/20 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-nomo-accent/40">
                             ENTRAR
                         </button>
                     </div>
@@ -282,7 +283,7 @@
         </div>
 
         <!-- LOADING SCREEN (Video) -->
-        <div v-if="showLoader" class="loader-overlay" :class="{'animate-fade-out': startFadeOut}">
+        <div v-if="showLoader" class="loader-overlay" :class="{'fade-out': startFadeOut}">
             <video src="loading.mp4" autoplay muted playsinline class="w-full h-full object-cover"></video>
         </div>
 
@@ -300,41 +301,41 @@
                         </div>
                     </div>
 
-                    <!-- Nav Links com Animação Wet Glass Refeita -->
+                    <!-- Nav Links Modern Fluid -->
                     <nav class="mt-8 px-3 space-y-2">
                         <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços de Trabalho</div>
 
                         <button @click="currentView = 'geral'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border transition-all duration-300 group nav-item-animated"
-                            :class="currentView === 'geral' ? 'bg-nomo-accent/10 text-nomo-accent border-nomo-accent/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
+                            :class="{'active': currentView === 'geral', 'text-slate-500 hover:text-white': currentView !== 'geral', 'text-nomo-accent': currentView === 'geral'}">
                             <i class="ph ph-squares-four text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Visão Geral</span>
                         </button>
 
                         <button @click="currentView = 'dev'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border transition-all duration-300 group nav-item-animated"
-                            :class="currentView === 'dev' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
+                            :class="{'active': currentView === 'dev', 'text-slate-500 hover:text-white': currentView !== 'dev', 'text-blue-400': currentView === 'dev'}">
                             <i class="ph ph-laptop text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Dev</span>
                         </button>
 
                         <button @click="currentView = 'editor'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border transition-all duration-300 group nav-item-animated"
-                            :class="currentView === 'editor' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
+                            :class="{'active': currentView === 'editor', 'text-slate-500 hover:text-white': currentView !== 'editor', 'text-purple-400': currentView === 'editor'}">
                             <i class="ph ph-film-strip text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Editor</span>
                         </button>
 
                         <button @click="currentView = 'enviar'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border transition-all duration-300 group nav-item-animated"
-                            :class="currentView === 'enviar' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
+                            :class="{'active': currentView === 'enviar', 'text-slate-500 hover:text-white': currentView !== 'enviar', 'text-indigo-400': currentView === 'enviar'}">
                             <i class="ph ph-paper-plane-right text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Enviar Vídeos</span>
                         </button>
 
                         <button @click="currentView = 'concluidos'" 
-                            class="w-full flex items-center px-3 py-3 rounded-xl border transition-all duration-300 group nav-item-animated"
-                            :class="currentView === 'concluidos' ? 'bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.1)]' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
+                            :class="{'active': currentView === 'concluidos', 'text-slate-500 hover:text-white': currentView !== 'concluidos', 'text-green-400': currentView === 'concluidos'}">
                             <i class="ph ph-check-circle text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Concluídos</span>
                         </button>
@@ -344,18 +345,18 @@
                         </div>
 
                         <button @click="currentView = 'analytics'"
-                            class="w-full flex items-center px-3 py-3 rounded-xl border transition-all duration-300 group nav-item-animated"
-                            :class="currentView === 'analytics' ? 'bg-nomo-cyan/10 text-nomo-cyan border-nomo-cyan/20 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'text-slate-500 hover:text-white hover:bg-white/5 border-transparent'">
+                            class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid"
+                            :class="{'active': currentView === 'analytics', 'text-slate-500 hover:text-white': currentView !== 'analytics', 'text-nomo-cyan': currentView === 'analytics'}">
                             <i class="ph ph-chart-bar text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Analytics</span>
                         </button>
 
-                        <a href="editsite.html" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 hover:bg-orange-500/10 rounded-xl transition-all duration-300 group border border-transparent hover:border-orange-500/20 mt-4 nav-item-animated">
+                        <a href="editsite.html" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group border border-transparent nav-item-fluid mt-4">
                             <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Editor Site</span>
                         </a>
 
-                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-green-400 hover:bg-green-500/10 rounded-xl transition-all duration-300 group border border-transparent hover:border-green-500/20 nav-item-animated">
+                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group border border-transparent nav-item-fluid">
                             <i class="ph ph-google-drive-logo text-xl relative z-10"></i>
                             <span class="hidden lg:block ml-3 font-medium relative z-10">Drive Prévias</span>
                         </a>
@@ -562,7 +563,7 @@
                     </div>
 
                     <div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                        <!-- Campos do Formulário (Reutilizando a estrutura existente para não duplicar código aqui, mas garantindo funcionalidade) -->
+                        <!-- Campos do Formulário -->
                         <section>
                             <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <i class="ph ph-whatsapp-logo text-lg"></i> Funil WhatsApp
@@ -572,7 +573,6 @@
                             </div>
                         </section>
                         
-                        <!-- Demais seções do drawer... (Resumido para caber, lógica é idêntica à versão anterior) -->
                         <div class="grid grid-cols-1 gap-6">
                             <section class="bg-blue-500/5 p-4 rounded-xl border border-blue-500/10">
                                 <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4"><i class="ph ph-laptop"></i> Desenvolvimento</h3>
@@ -633,7 +633,7 @@
                     isAuthenticated: false,
                     showLoader: false,
                     startFadeOut: false,
-                    isDisintegrating: false, // Alterado de isShattering para isDisintegrating
+                    isFadingOut: false, // Alterado para animação de fade
                     loginError: '',
                     currentUser: '',
                     
@@ -711,17 +711,17 @@
                     if (this.validUsers[u] && this.validUsers[u] === p) {
                         this.loginError = '';
                         this.currentUser = u;
-                        this.isDisintegrating = true; // Aciona o efeito de pó
+                        this.isFadingOut = true; // Inicia animação lenta de saída
                         
-                        // SALVAR NO LOCALSTORAGE
+                        // SALVAR NO LOCALSTORAGE (Com timestamp)
                         localStorage.setItem('nomo_auth', JSON.stringify({ user: u, timestamp: Date.now() }));
 
                         setTimeout(() => {
                             this.showLogin = false;
                             this.showLoader = true;
-                            this.isAuthenticated = true;
+                            this.isAuthenticated = true; // Prepara o app
                             this.startAppFlow(); 
-                        }, 1200); // Tempo aumentado para o efeito de pó terminar
+                        }, 1500); // 1.5s de animação de saída
                     } else {
                         this.loginError = 'ACESSO NEGADO. CREDENCIAIS INVÁLIDAS.';
                         this.loginForm.pass = '';
@@ -733,11 +733,21 @@
                     if (stored) {
                         try {
                             const data = JSON.parse(stored);
-                            // Opcional: Validar expiração do token se quiser (ex: 24h)
+                            const oneHour = 60 * 60 * 1000;
+                            const now = Date.now();
+
+                            // Checa expiração de 1 hora
+                            if (now - data.timestamp > oneHour) {
+                                this.logout(); // Expired
+                                return;
+                            }
+
+                            // Login válido e dentro do prazo
                             this.currentUser = data.user;
                             this.showLogin = false;
                             this.isAuthenticated = true;
-                            this.startAppFlow();
+                            this.startFadeOut = true; // IMPORTANTE: Torna o app visível imediatamente
+                            this.fetchData(); // Carrega dados
                         } catch(e) {
                             localStorage.removeItem('nomo_auth');
                         }
