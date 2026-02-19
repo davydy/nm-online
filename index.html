@@ -44,11 +44,16 @@
                     },
                     animation: {
                         'aurora': 'aurora 60s infinite alternate',
+                        'slide-in': 'slideIn 0.3s ease-out forwards',
                     },
                     keyframes: {
                         aurora: {
                             '0%': { backgroundPosition: '0% 50%' },
                             '100%': { backgroundPosition: '100% 50%' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(100%)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
                         }
                     }
                 }
@@ -95,6 +100,7 @@
         .select-chip:hover {
             background: rgba(255,255,255,0.05);
             border-color: rgba(168, 85, 247, 0.5);
+            transform: scale(1.02);
         }
         .select-chip.active {
             background: rgba(168, 85, 247, 0.2);
@@ -171,9 +177,15 @@
             border-left: 3px solid #a855f7;
         }
 
-        /* Dropdown Animation */
+        /* Vue Transitions */
         .dropdown-enter-active, .dropdown-leave-active { transition: all 0.2s ease-out; }
         .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-5px); }
+
+        .slide-in-enter-active, .slide-in-leave-active { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-in-enter-from, .slide-in-leave-to { transform: translateX(100%); }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
 
         [v-cloak] { display: none; }
     </style>
@@ -196,7 +208,7 @@
                     </div>
                     <div class="w-full space-y-4">
                         <div class="space-y-1">
-                            <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Usuário</label>
+                            <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Utilizador</label>
                             <input v-model="loginForm.user" type="text" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:border-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="Identificação">
                         </div>
                         <div class="space-y-1">
@@ -220,7 +232,6 @@
             
             <!-- Sidebar OTIMIZADA PARA TELAS MENORES -->
             <aside class="w-20 lg:w-64 bg-nomo-surface border-r border-white/5 flex flex-col z-20 shadow-2xl transition-all h-full max-h-screen">
-                <!-- Parte Superior (Logo) Fixa -->
                 <div class="flex-shrink-0">
                     <div class="h-28 flex items-center justify-center border-b border-white/5 relative group">
                         <div class="absolute inset-0 bg-gradient-to-b from-nomo-accent/10 to-transparent opacity-50"></div>
@@ -231,7 +242,6 @@
                     </div>
                 </div>
 
-                <!-- Navegação Rolável -->
                 <div class="flex-1 overflow-y-auto custom-scrollbar py-4">
                     <nav class="px-3 space-y-1">
                         <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços</div>
@@ -258,13 +268,12 @@
 
                         <div class="pt-4 pb-2"><div class="h-px bg-white/5 mx-2"></div></div>
 
-                        <!-- Links Externos -->
-                        <a href="editsite.html" target="_blank" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
+                        <a href="editsite.html" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
                             <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform"></i>
                             <span class="hidden lg:block ml-3 font-medium text-sm">Editor Site</span>
                         </a>
 
-                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group nav-item-fluid cursor-pointer relative z-50">
+                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group nav-item-fluid cursor-pointer relative z-50">
                             <i class="ph ph-google-drive-logo text-xl"></i>
                             <span class="hidden lg:block ml-3 font-medium text-sm">Drive Prévias</span>
                         </a>
@@ -294,7 +303,6 @@
 
             <!-- Main Content -->
             <main class="flex-1 flex flex-col relative min-w-0 bg-nomo-base/90">
-                <!-- Header -->
                 <header class="h-20 glass sticky top-0 z-10 flex items-center justify-between px-8">
                     <div class="flex items-center gap-4">
                         <h2 class="text-xl font-display font-bold text-white uppercase tracking-wider">
@@ -308,7 +316,6 @@
                     </div>
 
                     <div class="flex items-center gap-4 flex-1 justify-end">
-                        <!-- Dropdown Moderno -->
                         <div class="relative group" v-click-outside="closeSortMenu">
                             <button @click="showSortMenu = !showSortMenu" class="flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm text-white hover:border-nomo-accent/50 hover:bg-white/5 transition-all shadow-lg">
                                 <i class="ph ph-sort-ascending text-nomo-accent text-lg"></i>
@@ -343,9 +350,7 @@
                     </div>
                 </header>
 
-                <!-- Content Views -->
                 <div class="flex-1 overflow-auto p-8 scroll-smooth">
-                    <!-- Cards só aparecem se não for arquivo morto -->
                     <div v-if="currentView !== 'archived'" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
                             <p class="text-xs font-bold text-slate-400 uppercase mb-1">Leads na Tela</p>
@@ -369,7 +374,7 @@
                         </div>
                     </div>
 
-                    <!-- Tabela Otimizada -->
+                    <!-- Tabela -->
                     <div class="glass rounded-2xl overflow-hidden flex flex-col min-h-[500px]">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -383,14 +388,13 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-white/5">
-                                    <tr v-if="loading" v-for="n in 5" :key="n" class="animate-pulse">
+                                    <tr v-if="loading" v-for="n in 5" :key="'loading-'+n" class="animate-pulse">
                                         <td class="px-6 py-4"><div class="h-4 w-32 bg-white/5 rounded"></div></td>
                                         <td class="px-6 py-4"><div class="h-6 w-24 bg-white/5 rounded-full"></div></td>
                                         <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
                                         <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
                                         <td class="px-6 py-4"></td>
                                     </tr>
-                                    <!-- Renderiza apenas os primeiros 100 leads por performance (Virtual Pagination) -->
                                     <tr v-else v-for="lead in limitedLeads" :key="lead._row" @click="openDrawer(lead)" class="group hover:bg-nomo-accent/5 cursor-pointer transition-colors">
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
@@ -415,13 +419,23 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center gap-2 text-sm text-slate-300">
-                                                <span class="w-2 h-2 rounded-full" :class="getDevStatusColor(lead['STATUS DEV'])"></span>
-                                                {{ lead['STATUS DEV'] || 'Pendente' }}
+                                            <div class="flex flex-col gap-1.5">
+                                                <span v-if="getSiteStatus(lead['STATUS DEV'])" class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded w-fit border border-blue-500/30 flex items-center gap-1">
+                                                    <i class="ph ph-laptop"></i>{{ getSiteStatus(lead['STATUS DEV']) }}
+                                                </span>
+                                                <span v-if="getVideoStatus(lead['STATUS DEV'])" class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded w-fit border border-purple-500/30 flex items-center gap-1">
+                                                    <i class="ph ph-film-strip"></i>{{ getVideoStatus(lead['STATUS DEV']) }}
+                                                </span>
+                                                <span v-if="!getSiteStatus(lead['STATUS DEV']) && !getVideoStatus(lead['STATUS DEV'])" class="text-[10px] text-slate-500 flex items-center gap-1">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Pendente
+                                                </span>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 text-xs text-slate-400">{{ lead['LOCAL'] || '-' }}</td>
                                         <td class="px-6 py-4 text-right flex items-center justify-end h-full">
+                                            <a v-if="lead['LINK VÍDEO PRÉVIA']" :href="lead['LINK VÍDEO PRÉVIA']" target="_blank" @click.stop class="inline-flex items-center gap-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors mr-2">
+                                                <i class="ph ph-play text-sm"></i> Prévia
+                                            </a>
                                             <a v-if="currentView === 'enviar' && getWhatsappLink(lead)" :href="getWhatsappLink(lead)" target="_blank" @click.stop class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20"><i class="ph ph-whatsapp-logo text-lg"></i> Enviar</a>
                                             <i class="ph ph-caret-right text-slate-600 group-hover:text-white ml-2"></i>
                                         </td>
@@ -429,13 +443,11 @@
                                 </tbody>
                             </table>
                             
-                            <!-- Mensagem se vazio -->
                             <div v-if="!loading && filteredLeads.length === 0" class="p-12 text-center text-slate-500 flex flex-col items-center">
                                 <i class="ph ph-folder-open text-4xl mb-3 opacity-30"></i>
                                 <p>Nenhum lead encontrado neste espaço.</p>
                             </div>
                             
-                            <!-- Indicador de Otimização -->
                             <div v-if="filteredLeads.length > 100" class="p-3 text-center text-[10px] text-slate-600 border-t border-white/5">
                                 Mostrando 100 de {{ filteredLeads.length }} leads (Otimizado)
                             </div>
@@ -444,9 +456,13 @@
                 </div>
             </main>
 
-            <!-- DRAWER (Mantido com mesma lógica, apenas CSS otimizado pelo global) -->
-            <transition name="slide-in">
-                <div v-if="selectedLead" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
+            <!-- DRAWER -->
+            <transition name="fade">
+                <div v-if="showDrawer" @click="closeDrawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"></div>
+            </transition>
+
+            <transition name="slide-in" @after-leave="selectedLead = null">
+                <div v-if="showDrawer && selectedLead" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
                     <div class="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-xl">
                         <div>
                             <h2 class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
@@ -455,6 +471,7 @@
                             <div class="flex gap-2 mt-3">
                                 <a v-if="getWhatsappLink(selectedLead)" :href="getWhatsappLink(selectedLead)" target="_blank" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20 text-xs font-bold transition-all"><i class="ph ph-whatsapp-logo text-lg"></i> Chamar</a>
                                 <a v-if="selectedLead['LINK MAPS']" :href="selectedLead['LINK MAPS']" target="_blank" class="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/20 text-xs font-bold transition-all"><i class="ph ph-map-pin text-lg"></i> Mapa</a>
+                                <a v-if="selectedLead['LINK VÍDEO PRÉVIA']" :href="selectedLead['LINK VÍDEO PRÉVIA']" target="_blank" class="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-3 py-1.5 rounded-lg border border-purple-500/20 text-xs font-bold transition-all"><i class="ph ph-play text-lg"></i> Vídeo</a>
                             </div>
                         </div>
                         <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all"><i class="ph ph-x text-lg"></i></button>
@@ -478,28 +495,52 @@
                         <!-- COMERCIAL -->
                         <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
                             <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-lg"></i> Pipeline Comercial</h3>
-                            <div class="mb-4">
+                            
+                            <div class="mb-5">
                                 <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status WhatsApp</label>
                                 <div class="flex flex-wrap gap-2">
                                     <button v-for="opt in funnelOptions" :key="opt" @click="selectedLead['STATUS WHATSAPP'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium truncate" :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label><select v-model="selectedLead['STATUS LIGAÇÃO']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent"><option v-for="opt in callOptions" :key="opt" :value="opt">{{ opt }}</option></select></div>
-                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label><select v-model="selectedLead['PRIORIDADE (DEV)']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent"><option v-for="opt in priorityOptions" :key="opt" :value="opt">{{ opt }}</option></select></div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label>
+                                    <div class="flex flex-col gap-2">
+                                        <button v-for="opt in callOptions" :key="opt" @click="selectedLead['STATUS LIGAÇÃO'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate" :class="selectedLead['STATUS LIGAÇÃO'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label>
+                                    <div class="flex flex-col gap-2">
+                                        <button v-for="opt in priorityOptions" :key="opt" @click="selectedLead['PRIORIDADE (DEV)'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate" :class="selectedLead['PRIORIDADE (DEV)'] === opt ? 'bg-orange-500/20 border-orange-500 text-orange-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                    </div>
+                                </div>
                             </div>
                         </section>
                         
                         <!-- PRODUÇÃO -->
                         <div class="grid grid-cols-1 gap-4">
                             <section class="bg-blue-900/10 p-5 rounded-2xl border border-blue-500/20">
-                                <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4"><i class="ph ph-laptop"></i> Desenvolvimento</h3>
-                                <div class="flex flex-wrap gap-2"><button v-for="opt in siteOptions" :key="opt" @click="selectedLead['STATUS DEV'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="selectedLead['STATUS DEV'] === opt ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
+                                <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-laptop text-lg"></i> Desenvolvimento</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <button v-for="opt in siteOptions" :key="opt" @click="updateDevStatus(opt, 'site')" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="(selectedLead['STATUS DEV']||'').includes(opt) ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                </div>
                             </section>
                             <section class="bg-purple-900/10 p-5 rounded-2xl border border-purple-500/20">
-                                <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4"><i class="ph ph-film-strip"></i> Editor & Vídeo</h3>
-                                <div class="flex flex-wrap gap-2 mb-4"><button v-for="opt in videoOptions" :key="opt" @click="selectedLead['STATUS DEV'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="selectedLead['STATUS DEV'] === opt ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
-                                <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" placeholder="Cole o link do Drive da prévia..." class="w-full bg-black/40 border border-white/10 rounded-lg py-2.5 px-3 text-xs text-white focus:border-purple-500 outline-none">
+                                <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-film-strip text-lg"></i> Editor & Vídeo</h3>
+                                <div class="flex flex-wrap gap-2 mb-4"><button v-for="opt in videoOptions" :key="opt" @click="updateDevStatus(opt, 'video')" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="(selectedLead['STATUS DEV']||'').includes(opt) ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
+                                
+                                <div class="flex gap-2">
+                                    <div class="relative group flex-1">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="ph ph-google-drive-logo text-slate-500 group-focus-within:text-purple-400"></i>
+                                        </div>
+                                        <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" placeholder="Cole o link do Drive da prévia..." class="w-full pl-10 bg-black/40 border border-white/10 rounded-lg py-2.5 pr-3 text-xs text-white focus:border-purple-500 outline-none transition-all">
+                                    </div>
+                                    <a v-if="selectedLead['LINK VÍDEO PRÉVIA']" :href="selectedLead['LINK VÍDEO PRÉVIA']" target="_blank" class="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow-lg shadow-purple-500/30 transition-all">
+                                        <i class="ph ph-play text-lg"></i>
+                                    </a>
+                                </div>
                             </section>
                         </div>
                         
@@ -537,7 +578,6 @@
                 </div>
             </div>
 
-            <div v-if="selectedLead" @click="closeDrawer" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"></div>
         </div>
     </div>
 
@@ -574,6 +614,7 @@
                     loading: true,
                     saving: false,
                     selectedLead: null,
+                    showDrawer: false,
                     toast: { show: false, title: '', message: '', type: 'success' },
                     syncInterval: null,
                     
@@ -602,7 +643,6 @@
             },
             computed: {
                 limitedLeads() {
-                    // Retorna apenas os primeiros 100 leads da lista filtrada para performance
                     return this.filteredLeads.slice(0, 100);
                 },
                 userDisplayName() {
@@ -623,7 +663,6 @@
                         items = items.filter(l => (l['NOME EMPRESA'] && l['NOME EMPRESA'].toLowerCase().includes(term)) || (l['LOCAL'] && l['LOCAL'].toLowerCase().includes(term)));
                     }
 
-                    // Helpers
                     const isCompleted = (l) => { const wpp = l['STATUS WHATSAPP'] || ''; return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO'); };
                     const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido') || wpp.includes('Vácuo Eterno'); };
 
@@ -631,13 +670,35 @@
                         return items.filter(l => isDiscarded(l));
                     }
 
-                    // Se não for a view de arquivados, removemos os descartados de todas as outras views
                     items = items.filter(l => !isDiscarded(l));
 
-                    if (this.currentView === 'concluidos') items = items.filter(l => isCompleted(l));
-                    else if (this.currentView === 'dev') items = items.filter(l => !isCompleted(l) && !(l['STATUS DEV']||'').includes('Site Pronto'));
-                    else if (this.currentView === 'editor') items = items.filter(l => { const dev = l['STATUS DEV'] || ''; return !isCompleted(l) && (dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando')) && !dev.includes('Vídeo Pronto'); });
-                    else if (this.currentView === 'enviar') items = items.filter(l => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return !isCompleted(l) && dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado'); });
+                    if (this.currentView === 'concluidos') {
+                        items = items.filter(l => isCompleted(l));
+                    } else if (this.currentView === 'dev') {
+                        items = items.filter(l => {
+                            if (isCompleted(l)) return false;
+                            const dev = l['STATUS DEV'] || '';
+                            const wpp = l['STATUS WHATSAPP'] || '';
+                            const prio = l['PRIORIDADE (DEV)'] || '';
+                            
+                            const siteNotReady = !dev.includes('Site Pronto');
+                            const hasPrio = prio && prio !== '';
+                            const hasMsg = wpp.includes('Mensagem enviada') || wpp.includes('Negociação') || wpp.includes('Remarketing');
+                            
+                            return siteNotReady && hasPrio && hasMsg;
+                        });
+                    } else if (this.currentView === 'editor') {
+                        items = items.filter(l => { 
+                            const dev = l['STATUS DEV'] || ''; 
+                            return !isCompleted(l) && (dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando')) && !dev.includes('Vídeo Pronto'); 
+                        });
+                    } else if (this.currentView === 'enviar') {
+                        items = items.filter(l => { 
+                            const dev = l['STATUS DEV'] || ''; 
+                            const wpp = l['STATUS WHATSAPP'] || ''; 
+                            return !isCompleted(l) && dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado'); 
+                        });
+                    }
 
                     items.sort((a, b) => {
                         if (this.sortOption === 'az') return (a['NOME EMPRESA'] || '').localeCompare(b['NOME EMPRESA'] || '');
@@ -655,17 +716,62 @@
                 },
                 stats() {
                     const total = this.leads.length;
-                    const closed = this.leads.filter(l => (l['STATUS WHATSAPP']||'').includes('FECHADO') || (l['STATUS WHATSAPP']||'').includes('Vídeo Enviado')).length;
-                    // Lógica ajustada para stats ignorarem arquivados
-                    const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido'); };
+                    const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido') || wpp.includes('Vácuo Eterno'); };
+                    const isCompleted = (l) => { const wpp = l['STATUS WHATSAPP'] || ''; return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO'); };
                     
-                    const devPending = this.leads.filter(l => !isDiscarded(l) && !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && !((l['STATUS DEV']||'').includes('Site Pronto'))).length;
-                    const videoPending = this.leads.filter(l => !isDiscarded(l) && !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && !((l['STATUS DEV']||'').includes('Vídeo Pronto')) && ((l['STATUS DEV']||'').includes('Site Pronto'))).length;
-                    const readyToSend = this.leads.filter(l => !isDiscarded(l) && !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && (l['STATUS DEV']||'').includes('Vídeo Pronto')).length;
+                    const devPending = this.leads.filter(l => {
+                        if (isDiscarded(l) || isCompleted(l)) return false;
+                        const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; const prio = l['PRIORIDADE (DEV)'] || '';
+                        return !dev.includes('Site Pronto') && prio && prio !== '' && (wpp.includes('Mensagem enviada') || wpp.includes('Negociação') || wpp.includes('Remarketing'));
+                    }).length;
+                    
+                    const videoPending = this.leads.filter(l => {
+                        if (isDiscarded(l) || isCompleted(l)) return false;
+                        const dev = l['STATUS DEV'] || '';
+                        return dev.includes('Site Pronto') && !dev.includes('Vídeo Pronto');
+                    }).length;
+                    
+                    const readyToSend = this.leads.filter(l => {
+                        if (isDiscarded(l) || isCompleted(l)) return false;
+                        const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || '';
+                        return dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado');
+                    }).length;
+                    
+                    const closed = this.leads.filter(l => isCompleted(l)).length;
+
                     return { total, devPending, videoPending, closed, readyToSend };
                 }
             },
             methods: {
+                updateDevStatus(opt, type) {
+                    let current = this.selectedLead['STATUS DEV'] || '';
+                    let sitePart = '';
+                    let videoPart = '';
+
+                    this.siteOptions.forEach(o => { if (current.includes(o)) sitePart = o; });
+                    this.videoOptions.forEach(o => { if (current.includes(o)) videoPart = o; });
+
+                    if (type === 'site') {
+                        sitePart = (sitePart === opt) ? '' : opt;
+                    } else if (type === 'video') {
+                        videoPart = (videoPart === opt) ? '' : opt;
+                    }
+
+                    let parts = [];
+                    if (sitePart) parts.push(sitePart);
+                    if (videoPart) parts.push(videoPart);
+
+                    this.selectedLead['STATUS DEV'] = parts.join(' | ');
+                },
+                getSiteStatus(status) {
+                    if (!status) return null;
+                    return this.siteOptions.find(o => status.includes(o)) || null;
+                },
+                getVideoStatus(status) {
+                    if (!status) return null;
+                    return this.videoOptions.find(o => status.includes(o)) || null;
+                },
+
                 selectSort(option) { this.sortOption = option; this.showSortMenu = false; },
                 closeSortMenu() { this.showSortMenu = false; },
                 handleLogin() {
@@ -701,8 +807,13 @@
                     this.loading = true;
                     try { const response = await fetch(API_URL); this.leads = await response.json(); } catch (error) { this.showToast("Erro", "Falha ao carregar dados.", "error"); } finally { this.loading = false; }
                 },
-                openDrawer(lead) { this.selectedLead = JSON.parse(JSON.stringify(lead)); },
-                closeDrawer() { this.selectedLead = null; },
+                openDrawer(lead) { 
+                    this.selectedLead = JSON.parse(JSON.stringify(lead)); 
+                    this.showDrawer = true;
+                },
+                closeDrawer() { 
+                    this.showDrawer = false; 
+                },
                 async saveLead() {
                     this.saving = true;
                     try {
@@ -737,6 +848,7 @@
                     return 'bg-blue-500';
                 },
                 getWhatsappLink(lead) {
+                    if (!lead) return null;
                     const rawLink = lead['LINK WHATSAPP'];
                     const phone = lead['TEL. NUMÉRICO'];
                     if (rawLink && (rawLink.startsWith('http') || rawLink.startsWith('wa.me'))) return rawLink;
