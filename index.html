@@ -40,10 +40,11 @@
                     },
                     boxShadow: {
                         'neon': '0 0 10px rgba(168, 85, 247, 0.3), 0 0 20px rgba(168, 85, 247, 0.1)',
-                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                        // Sombra Glass mais leve para performance
+                        'glass': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     },
                     animation: {
-                        'aurora': 'aurora 20s infinite alternate',
+                        'aurora': 'aurora 60s infinite alternate', // Mais lento para consumir menos CPU
                     },
                     keyframes: {
                         aurora: {
@@ -63,22 +64,25 @@
             overflow: hidden; 
         }
 
+        /* Otimização de Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #332452; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
         
+        /* Glass Otimizado (Menos Blur em elementos gerais) */
         .glass {
-            background: rgba(17, 12, 29, 0.7);
-            backdrop-filter: blur(12px);
+            background: rgba(17, 12, 29, 0.85); /* Mais opaco para performance */
+            backdrop-filter: blur(8px); /* Blur reduzido */
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .glass-panel {
-            background: rgba(30, 20, 54, 0.4);
+            background: rgba(30, 20, 54, 0.6);
             border: 1px solid rgba(168, 85, 247, 0.1);
-            backdrop-filter: blur(5px);
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            /* Removido backdrop-filter daqui para performance em listas longas */
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            will-change: transform; /* Dica para o navegador */
         }
         
         .glass-panel:hover {
@@ -87,22 +91,23 @@
         }
 
         .select-chip {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s;
             border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
         }
         .select-chip:hover {
             background: rgba(255,255,255,0.05);
             border-color: rgba(168, 85, 247, 0.5);
-            transform: scale(1.02);
         }
         .select-chip.active {
             background: rgba(168, 85, 247, 0.2);
             border-color: #a855f7;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
             color: white;
             font-weight: 600;
         }
 
+        /* Overlay de Loading */
         .loader-overlay {
             position: fixed;
             inset: 0;
@@ -118,7 +123,7 @@
             pointer-events: none;
         }
 
-        /* --- LOGIN STYLES --- */
+        /* Login Background Otimizado */
         .login-wrapper {
             position: fixed;
             inset: 0;
@@ -126,99 +131,54 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            /* Gradiente estático ou com animação muito lenta é melhor */
             background: linear-gradient(-45deg, #020005, #130621, #0f172a, #000000);
-            background-size: 400% 400%;
-            animation: aurora 20s ease infinite;
+            background-size: 200% 200%;
+            animation: aurora 60s ease infinite;
             transition: background 1.5s ease; 
         }
 
-        /* Animação de saída LENTA do Login */
+        .login-wrapper.fading-out {
+            pointer-events: none;
+            background: #000000; 
+        }
+        
         .login-wrapper.fading-out .glass-metallic-card {
             animation: slowFadeOut 1.5s forwards cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .login-wrapper.fading-out {
-            pointer-events: none;
-            background: #000000; /* Fade para preto do fundo */
-        }
 
         @keyframes slowFadeOut {
-            0% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-                filter: blur(0px);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.95) translateY(-20px);
-                filter: blur(15px);
-            }
+            0% { opacity: 1; transform: scale(1); filter: blur(0px); }
+            100% { opacity: 0; transform: scale(0.95); filter: blur(10px); }
         }
 
         .glass-metallic-card {
-            background: rgba(20, 20, 30, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(20, 20, 30, 0.8);
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-left: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,255,255,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        /* --- ANIMAÇÕES DAS ABAS --- */
+        /* Nav Item Simplificado para Performance */
         .nav-item-fluid {
             position: relative;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.01);
-            transition: all 0.4s ease;
-        }
-
-        .nav-item-fluid::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.0) 20%, rgba(168, 85, 247, 0.1) 50%, rgba(168, 85, 247, 0.0) 80%, transparent 100%);
-            transform: skewX(-20deg) translateX(-150%);
-            transition: none; 
-            animation: shimmerFlow 3s infinite ease-in-out;
+            background: transparent;
+            transition: background 0.3s ease;
         }
 
         .nav-item-fluid:hover {
             background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(168, 85, 247, 0.3);
-            transform: translateX(5px);
-        }
-
-        @keyframes shimmerFlow {
-            0% { transform: skewX(-20deg) translateX(-150%); }
-            50% { transform: skewX(-20deg) translateX(150%); }
-            100% { transform: skewX(-20deg) translateX(150%); } 
         }
 
         .nav-item-fluid.active {
             background: rgba(168, 85, 247, 0.15);
-            border-color: rgba(168, 85, 247, 0.5);
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
-        }
-        
-        .nav-item-fluid.active::after {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0; width: 3px;
-            background: #a855f7;
-            box-shadow: 0 0 10px #a855f7;
+            border-left: 3px solid #a855f7;
         }
 
-        /* --- CUSTOM DROPDOWN ANIMATION --- */
-        .dropdown-enter-active,
-        .dropdown-leave-active {
-            transition: all 0.2s ease-out;
-        }
-        .dropdown-enter-from,
-        .dropdown-leave-to {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
+        /* Dropdown Animation */
+        .dropdown-enter-active, .dropdown-leave-active { transition: all 0.2s ease-out; }
+        .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-5px); }
 
         [v-cloak] { display: none; }
     </style>
@@ -229,100 +189,98 @@
         
         <!-- TELA DE LOGIN -->
         <div v-if="showLogin" class="login-wrapper" :class="{'fading-out': isFadingOut}">
-            <div class="glass-metallic-card p-10 rounded-3xl w-full max-w-md mx-4 relative overflow-hidden login-content">
-                
-                <div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
-
+            <div class="glass-metallic-card p-10 rounded-3xl w-full max-w-md mx-4 relative overflow-hidden">
                 <div class="relative z-10 flex flex-col items-center">
                     <div class="w-24 h-24 mb-6 relative group">
                         <div class="absolute inset-0 bg-nomo-accent blur-2xl opacity-30 rounded-full animate-pulse"></div>
                         <img src="logo.png" class="w-full h-full object-contain drop-shadow-2xl relative z-10">
                     </div>
-
                     <div class="text-center mb-8">
                         <h2 class="font-display text-3xl font-bold text-white tracking-tight">NOMO <span class="text-nomo-accent">SYSTEM</span></h2>
                         <p class="text-slate-400 text-xs uppercase tracking-widest">Acesso Restrito</p>
                     </div>
-
                     <div class="w-full space-y-4">
                         <div class="space-y-1">
                             <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Usuário</label>
-                            <div class="relative">
-                                <i class="ph ph-user absolute left-3 top-3 text-slate-500"></i>
-                                <input v-model="loginForm.user" type="text" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="Identificação">
-                            </div>
+                            <input v-model="loginForm.user" type="text" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:border-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="Identificação">
                         </div>
-
                         <div class="space-y-1">
                             <label class="text-[10px] uppercase font-bold text-nomo-accent ml-1">Senha</label>
-                            <div class="relative">
-                                <i class="ph ph-lock-key absolute left-3 top-3 text-slate-500"></i>
-                                <input v-model="loginForm.pass" type="password" @keyup.enter="handleLogin" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:border-nomo-accent focus:ring-1 focus:ring-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="••••">
-                            </div>
+                            <input v-model="loginForm.pass" type="password" @keyup.enter="handleLogin" class="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:border-nomo-accent outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="••••">
                         </div>
-
                         <div v-if="loginError" class="text-red-500 text-xs text-center font-bold animate-pulse">{{ loginError }}</div>
-
-                        <button @click="handleLogin" class="w-full mt-6 py-3 bg-gradient-to-r from-nomo-accent to-indigo-600 hover:from-nomo-accent hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-nomo-accent/20 transform transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-nomo-accent/40">ENTRAR</button>
+                        <button @click="handleLogin" class="w-full mt-6 py-3 bg-gradient-to-r from-nomo-accent to-indigo-600 hover:from-nomo-accent hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-nomo-accent/20 transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">ENTRAR</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- LOADING SCREEN (Video) -->
+        <!-- LOADING SCREEN -->
         <div v-if="showLoader" class="loader-overlay" :class="{'fade-out': startFadeOut}">
             <video src="loading.mp4" autoplay muted playsinline class="w-full h-full object-cover"></video>
         </div>
 
         <!-- APP PRINCIPAL -->
         <div v-if="isAuthenticated" class="flex w-full h-full transition-opacity duration-1000" :class="startFadeOut ? 'opacity-100' : 'opacity-0'">
-            <!-- Sidebar Navigation -->
+            
+            <!-- Sidebar -->
             <aside class="w-20 lg:w-64 bg-nomo-surface border-r border-white/5 flex flex-col justify-between z-20 shadow-2xl transition-all">
                 <div>
-                    <div class="h-32 flex items-center justify-center border-b border-white/5 relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-gradient-to-b from-nomo-accent/10 to-transparent opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                        <div class="relative w-20 h-20 flex items-center justify-center transition-transform transform group-hover:scale-110 duration-500">
-                            <div class="absolute inset-0 bg-nomo-accent blur-2xl opacity-40 rounded-full animate-pulse-slow"></div>
-                            <img src="logo.png" alt="Nomo Logo" class="relative w-full h-full object-contain drop-shadow-2xl z-10">
+                    <div class="h-28 flex items-center justify-center border-b border-white/5 relative group">
+                        <div class="absolute inset-0 bg-gradient-to-b from-nomo-accent/10 to-transparent opacity-50"></div>
+                        <div class="relative w-16 h-16 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-nomo-accent blur-2xl opacity-40 rounded-full animate-pulse"></div>
+                            <img src="logo.png" alt="Nomo Logo" class="relative w-full h-full object-contain z-10">
                         </div>
                     </div>
 
-                    <nav class="mt-8 px-3 space-y-2">
-                        <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços de Trabalho</div>
+                    <nav class="mt-6 px-3 space-y-1">
+                        <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços</div>
 
-                        <button @click="currentView = 'geral'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'geral', 'text-slate-500 hover:text-white': currentView !== 'geral', 'text-nomo-accent': currentView === 'geral'}">
-                            <i class="ph ph-squares-four text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Visão Geral</span>
+                        <button @click="currentView = 'geral'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid" :class="{'active': currentView === 'geral', 'text-slate-400 hover:text-white': currentView !== 'geral', 'text-nomo-accent': currentView === 'geral'}">
+                            <i class="ph ph-squares-four text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Visão Geral</span>
                         </button>
 
-                        <button @click="currentView = 'dev'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'dev', 'text-slate-500 hover:text-white': currentView !== 'dev', 'text-blue-400': currentView === 'dev'}">
-                            <i class="ph ph-laptop text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Dev</span>
+                        <button @click="currentView = 'dev'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid" :class="{'active': currentView === 'dev', 'text-slate-400 hover:text-white': currentView !== 'dev', 'text-blue-400': currentView === 'dev'}">
+                            <i class="ph ph-laptop text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Espaço Dev</span>
                         </button>
 
-                        <button @click="currentView = 'editor'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'editor', 'text-slate-500 hover:text-white': currentView !== 'editor', 'text-purple-400': currentView === 'editor'}">
-                            <i class="ph ph-film-strip text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Espaço Editor</span>
+                        <button @click="currentView = 'editor'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid" :class="{'active': currentView === 'editor', 'text-slate-400 hover:text-white': currentView !== 'editor', 'text-purple-400': currentView === 'editor'}">
+                            <i class="ph ph-film-strip text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Espaço Editor</span>
                         </button>
 
-                        <button @click="currentView = 'enviar'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'enviar', 'text-slate-500 hover:text-white': currentView !== 'enviar', 'text-indigo-400': currentView === 'enviar'}">
-                            <i class="ph ph-paper-plane-right text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Enviar Vídeos</span>
+                        <button @click="currentView = 'enviar'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid" :class="{'active': currentView === 'enviar', 'text-slate-400 hover:text-white': currentView !== 'enviar', 'text-indigo-400': currentView === 'enviar'}">
+                            <i class="ph ph-paper-plane-right text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Enviar Vídeos</span>
                         </button>
 
-                        <button @click="currentView = 'concluidos'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'concluidos', 'text-slate-500 hover:text-white': currentView !== 'concluidos', 'text-green-400': currentView === 'concluidos'}">
-                            <i class="ph ph-check-circle text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Concluídos</span>
+                        <button @click="currentView = 'concluidos'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid" :class="{'active': currentView === 'concluidos', 'text-slate-400 hover:text-white': currentView !== 'concluidos', 'text-green-400': currentView === 'concluidos'}">
+                            <i class="ph ph-check-circle text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Concluídos</span>
+                        </button>
+
+                        <button @click="currentView = 'analytics'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid" :class="{'active': currentView === 'analytics', 'text-slate-400 hover:text-white': currentView !== 'analytics', 'text-nomo-cyan': currentView === 'analytics'}">
+                            <i class="ph ph-chart-bar text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Analytics</span>
                         </button>
 
                         <div class="pt-4 pb-2"><div class="h-px bg-white/5 mx-2"></div></div>
 
-                        <button @click="currentView = 'analytics'" class="w-full flex items-center px-3 py-3 rounded-xl border border-transparent group nav-item-fluid" :class="{'active': currentView === 'analytics', 'text-slate-500 hover:text-white': currentView !== 'analytics', 'text-nomo-cyan': currentView === 'analytics'}">
-                            <i class="ph ph-chart-bar text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Analytics</span>
-                        </button>
-
-                        <a href="editsite.html" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group border border-transparent nav-item-fluid mt-4">
-                            <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Editor Site</span>
+                        <!-- Links Externos - Correção do Link do Editor -->
+                        <a href="editsite.html" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
+                            <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform"></i>
+                            <span class="hidden lg:block ml-3 font-medium text-sm">Editor Site</span>
                         </a>
 
-                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group border border-transparent nav-item-fluid">
-                            <i class="ph ph-google-drive-logo text-xl relative z-10"></i><span class="hidden lg:block ml-3 font-medium relative z-10">Drive Prévias</span>
+                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group nav-item-fluid cursor-pointer relative z-50">
+                            <i class="ph ph-google-drive-logo text-xl"></i>
+                            <span class="hidden lg:block ml-3 font-medium text-sm">Drive Prévias</span>
                         </a>
+
+                        <div class="mt-auto pt-4">
+                            <!-- Botão Arquivados (Escondido/Discreto) -->
+                            <button @click="currentView = 'archived'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid text-slate-600 hover:text-slate-400" :class="{'bg-white/5 text-slate-300': currentView === 'archived'}">
+                                <i class="ph ph-archive-box text-xl"></i>
+                                <span class="hidden lg:block ml-3 font-medium text-sm">Arquivo Morto</span>
+                            </button>
+                        </div>
                     </nav>
                 </div>
 
@@ -352,53 +310,34 @@
                             <span v-if="currentView === 'enviar'" class="text-indigo-400">Sala de Envios</span>
                             <span v-if="currentView === 'concluidos'" class="text-green-400">Trabalhos Concluídos</span>
                             <span v-if="currentView === 'analytics'" class="text-nomo-cyan">Analytics Dashboard</span>
+                            <span v-if="currentView === 'archived'" class="text-slate-500">Arquivo Morto / Descartados</span>
                         </h2>
                     </div>
 
-                    <!-- Busca e Filtros -->
                     <div class="flex items-center gap-4 flex-1 justify-end">
-                        
-                        <!-- Ordenação Customizada -->
+                        <!-- Dropdown Moderno -->
                         <div class="relative group" v-click-outside="closeSortMenu">
-                            <button @click="showSortMenu = !showSortMenu" class="flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white hover:border-nomo-accent/50 hover:bg-white/5 transition-all shadow-lg">
+                            <button @click="showSortMenu = !showSortMenu" class="flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm text-white hover:border-nomo-accent/50 hover:bg-white/5 transition-all shadow-lg">
                                 <i class="ph ph-sort-ascending text-nomo-accent text-lg"></i>
                                 <span class="font-medium text-slate-200">{{ sortLabels[sortOption] }}</span>
                                 <i class="ph ph-caret-down text-slate-400 transition-transform duration-300" :class="{'rotate-180': showSortMenu}"></i>
                             </button>
                             
-                            <!-- Dropdown Menu -->
                             <transition name="dropdown">
-                                <div v-if="showSortMenu" class="absolute right-0 top-full mt-2 w-52 bg-[#0c0814]/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
+                                <div v-if="showSortMenu" class="absolute right-0 top-full mt-2 w-52 bg-[#0c0814]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-30">
                                     <div class="p-1">
-                                        <button @click="selectSort('newest')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'newest' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
-                                            <span>Mais Recentes</span>
-                                            <i v-if="sortOption === 'newest'" class="ph ph-check text-nomo-accent"></i>
-                                        </button>
-                                        <button @click="selectSort('oldest')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'oldest' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
-                                            <span>Mais Antigos</span>
-                                            <i v-if="sortOption === 'oldest'" class="ph ph-check text-nomo-accent"></i>
-                                        </button>
-                                        <button @click="selectSort('az')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'az' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
-                                            <span>Alfabética (A-Z)</span>
-                                            <i v-if="sortOption === 'az'" class="ph ph-check text-nomo-accent"></i>
-                                        </button>
-                                        <button @click="selectSort('za')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'za' ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
-                                            <span>Alfabética (Z-A)</span>
-                                            <i v-if="sortOption === 'za'" class="ph ph-check text-nomo-accent"></i>
-                                        </button>
-                                        <div class="h-px bg-white/5 my-1"></div>
-                                        <button @click="selectSort('priority')" class="w-full text-left px-3 py-2.5 text-xs font-medium rounded-lg transition-colors flex items-center justify-between group" :class="sortOption === 'priority' ? 'bg-red-500/20 text-red-300' : 'text-slate-400 hover:bg-red-500/10 hover:text-red-400'">
-                                            <span>Prioridade Alta</span>
-                                            <i v-if="sortOption === 'priority'" class="ph ph-fire text-red-500"></i>
+                                        <button v-for="(label, key) in sortLabels" :key="key" @click="selectSort(key)" class="w-full text-left px-3 py-2 text-xs font-medium rounded-lg transition-colors flex items-center justify-between" :class="sortOption === key ? 'bg-nomo-accent/20 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'">
+                                            <span>{{ label }}</span>
+                                            <i v-if="sortOption === key" class="ph ph-check text-nomo-accent"></i>
                                         </button>
                                     </div>
                                 </div>
                             </transition>
                         </div>
 
-                        <div class="flex items-center w-full max-w-xs bg-black/30 border border-white/10 rounded-full px-5 py-2.5 focus-within:border-nomo-accent/50 focus-within:shadow-neon transition-all">
+                        <div class="flex items-center w-full max-w-xs bg-black/30 border border-white/10 rounded-full px-4 py-2 focus-within:border-nomo-accent/50 focus-within:shadow-neon transition-all">
                             <i class="ph ph-magnifying-glass text-nomo-accent text-lg"></i>
-                            <input type="text" v-model="search" placeholder="Buscar..." class="bg-transparent border-none outline-none text-sm ml-3 w-full text-white placeholder-slate-500">
+                            <input type="text" v-model="search" placeholder="Buscar..." class="bg-transparent border-none outline-none text-sm ml-3 w-full text-white placeholder-slate-500 h-full">
                         </div>
 
                         <div class="flex items-center gap-3 border-l border-white/10 pl-4">
@@ -413,8 +352,8 @@
 
                 <!-- Content Views -->
                 <div v-if="currentView !== 'analytics'" class="flex-1 overflow-auto p-8 scroll-smooth">
-                    <!-- KPI Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <!-- Cards só aparecem se não for arquivo morto -->
+                    <div v-if="currentView !== 'archived'" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
                             <p class="text-xs font-bold text-slate-400 uppercase mb-1">Leads na Tela</p>
                             <h3 class="font-display text-3xl font-bold text-white">{{ filteredLeads.length }}</h3>
@@ -437,15 +376,15 @@
                         </div>
                     </div>
 
-                    <!-- Tabela -->
+                    <!-- Tabela Otimizada -->
                     <div class="glass rounded-2xl overflow-hidden flex flex-col min-h-[500px]">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead class="bg-black/40 border-b border-white/5">
                                     <tr>
                                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Empresa</th>
-                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Funil WhatsApp & Progresso</th>
-                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Trabalho</th>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                        <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trabalho</th>
                                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Local</th>
                                         <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Ação</th>
                                     </tr>
@@ -458,7 +397,8 @@
                                         <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
                                         <td class="px-6 py-4"></td>
                                     </tr>
-                                    <tr v-else v-for="lead in filteredLeads" :key="lead._row" @click="openDrawer(lead)" class="group hover:bg-nomo-accent/5 cursor-pointer transition-colors">
+                                    <!-- Renderiza apenas os primeiros 100 leads por performance (Virtual Pagination) -->
+                                    <tr v-else v-for="lead in limitedLeads" :key="lead._row" @click="openDrawer(lead)" class="group hover:bg-nomo-accent/5 cursor-pointer transition-colors">
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
                                                 <div class="w-10 h-10 rounded-lg bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -489,15 +429,22 @@
                                         </td>
                                         <td class="px-6 py-4 text-xs text-slate-400">{{ lead['LOCAL'] || '-' }}</td>
                                         <td class="px-6 py-4 text-right flex items-center justify-end h-full">
-                                            <a v-if="currentView === 'enviar' && getWhatsappLink(lead)" :href="getWhatsappLink(lead)" target="_blank" @click.stop class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20"><i class="ph ph-whatsapp-logo text-lg"></i> Enviar Agora</a>
-                                            <i class="ph ph-caret-right text-slate-600 group-hover:text-white"></i>
+                                            <a v-if="currentView === 'enviar' && getWhatsappLink(lead)" :href="getWhatsappLink(lead)" target="_blank" @click.stop class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20"><i class="ph ph-whatsapp-logo text-lg"></i> Enviar</a>
+                                            <i class="ph ph-caret-right text-slate-600 group-hover:text-white ml-2"></i>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <div v-if="!loading && filteredLeads.length === 0" class="p-8 text-center text-slate-500">
-                                <i class="ph ph-check-circle text-4xl mb-2 opacity-50"></i>
-                                <p>Tudo limpo neste espaço!</p>
+                            
+                            <!-- Mensagem se vazio -->
+                            <div v-if="!loading && filteredLeads.length === 0" class="p-12 text-center text-slate-500 flex flex-col items-center">
+                                <i class="ph ph-folder-open text-4xl mb-3 opacity-30"></i>
+                                <p>Nenhum lead encontrado neste espaço.</p>
+                            </div>
+                            
+                            <!-- Indicador de Otimização -->
+                            <div v-if="filteredLeads.length > 100" class="p-3 text-center text-[10px] text-slate-600 border-t border-white/5">
+                                Mostrando 100 de {{ filteredLeads.length }} leads (Otimizado)
                             </div>
                         </div>
                     </div>
@@ -505,7 +452,6 @@
 
                 <!-- ANALYTICS VIEW -->
                 <div v-else class="flex-1 overflow-auto p-8 scroll-smooth">
-                    <!-- ... analytics content mantido ... -->
                     <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="glass p-6 rounded-2xl">
                             <h3 class="text-sm font-bold text-slate-400 uppercase mb-6 flex items-center gap-2"><i class="ph ph-funnel text-lg text-nomo-accent"></i> Funil de Conversão</h3>
@@ -526,78 +472,53 @@
                 </div>
             </main>
 
-            <!-- DRAWER DE EDIÇÃO (OTIMIZADO) -->
+            <!-- DRAWER (Mantido com mesma lógica, apenas CSS otimizado pelo global) -->
             <transition name="slide-in">
                 <div v-if="selectedLead" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
-                    <!-- Header -->
                     <div class="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-xl">
                         <div>
                             <h2 class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
                                 <span class="text-nomo-accent">#</span> {{ selectedLead['NOME EMPRESA'] }}
                             </h2>
-                            <!-- AÇÕES RÁPIDAS NO TOPO -->
                             <div class="flex gap-2 mt-3">
                                 <a v-if="getWhatsappLink(selectedLead)" :href="getWhatsappLink(selectedLead)" target="_blank" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20 text-xs font-bold transition-all"><i class="ph ph-whatsapp-logo text-lg"></i> Chamar</a>
                                 <a v-if="selectedLead['LINK MAPS']" :href="selectedLead['LINK MAPS']" target="_blank" class="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/20 text-xs font-bold transition-all"><i class="ph ph-map-pin text-lg"></i> Mapa</a>
                             </div>
                         </div>
-                        <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all">
-                            <i class="ph ph-x text-lg"></i>
-                        </button>
+                        <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all"><i class="ph ph-x text-lg"></i></button>
                     </div>
 
                     <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                        
-                        <!-- CARD 1: INTELIGÊNCIA (OSINT) -->
+                        <!-- OSINT -->
                         <section class="bg-gradient-to-br from-indigo-900/10 to-nomo-surface border border-indigo-500/20 p-5 rounded-2xl">
-                            <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <i class="ph ph-detective text-lg"></i> Inteligência & Redes
-                            </h3>
+                            <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-detective text-lg"></i> Inteligência & Redes</h3>
                             <div class="grid grid-cols-3 gap-2 mb-4">
-                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'instagram')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/50 rounded-xl transition-all group">
-                                    <i class="ph ph-instagram-logo text-lg text-slate-400 group-hover:text-pink-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Instagram</span>
-                                </button>
-                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'linkedin')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 rounded-xl transition-all group">
-                                    <i class="ph ph-linkedin-logo text-lg text-slate-400 group-hover:text-blue-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">LinkedIn</span>
-                                </button>
-                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'google')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 rounded-xl transition-all group">
-                                    <i class="ph ph-google-logo text-lg text-slate-400 group-hover:text-green-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Geral</span>
-                                </button>
+                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'instagram')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/50 rounded-xl transition-all group"><i class="ph ph-instagram-logo text-lg text-slate-400 group-hover:text-pink-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Instagram</span></button>
+                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'linkedin')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 rounded-xl transition-all group"><i class="ph ph-linkedin-logo text-lg text-slate-400 group-hover:text-blue-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">LinkedIn</span></button>
+                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'google')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 rounded-xl transition-all group"><i class="ph ph-google-logo text-lg text-slate-400 group-hover:text-green-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Geral</span></button>
                             </div>
                             <div class="flex gap-2">
-                                <input v-model="selectedLead['WEBSITE ATUAL']" type="text" placeholder="Cole o link social encontrado..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none">
+                                <input v-model="selectedLead['WEBSITE ATUAL']" type="text" placeholder="Cole o link social..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none">
                                 <a v-if="selectedLead['WEBSITE ATUAL']" :href="selectedLead['WEBSITE ATUAL']" target="_blank" class="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all"><i class="ph ph-arrow-square-out text-lg"></i></a>
                             </div>
                         </section>
 
-                        <!-- CARD 2: COMERCIAL -->
+                        <!-- COMERCIAL -->
                         <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
                             <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-lg"></i> Pipeline Comercial</h3>
-                            
                             <div class="mb-4">
                                 <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status WhatsApp</label>
                                 <div class="flex flex-wrap gap-2">
                                     <button v-for="opt in funnelOptions" :key="opt" @click="selectedLead['STATUS WHATSAPP'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium truncate" :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label>
-                                    <select v-model="selectedLead['STATUS LIGAÇÃO']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent">
-                                        <option v-for="opt in callOptions" :key="opt" :value="opt">{{ opt }}</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label>
-                                    <select v-model="selectedLead['PRIORIDADE (DEV)']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent">
-                                        <option v-for="opt in priorityOptions" :key="opt" :value="opt">{{ opt }}</option>
-                                    </select>
-                                </div>
+                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label><select v-model="selectedLead['STATUS LIGAÇÃO']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent"><option v-for="opt in callOptions" :key="opt" :value="opt">{{ opt }}</option></select></div>
+                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label><select v-model="selectedLead['PRIORIDADE (DEV)']" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-nomo-accent"><option v-for="opt in priorityOptions" :key="opt" :value="opt">{{ opt }}</option></select></div>
                             </div>
                         </section>
                         
-                        <!-- CARD 3: PRODUÇÃO -->
+                        <!-- PRODUÇÃO -->
                         <div class="grid grid-cols-1 gap-4">
                             <section class="bg-blue-900/10 p-5 rounded-2xl border border-blue-500/20">
                                 <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4"><i class="ph ph-laptop"></i> Desenvolvimento</h3>
@@ -610,7 +531,7 @@
                             </section>
                         </div>
                         
-                        <!-- CARD 4: DADOS CADASTRAIS -->
+                        <!-- DADOS -->
                         <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
                             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4"><i class="ph ph-address-book"></i> Dados de Contato</h3>
                             <div class="grid grid-cols-2 gap-4 mb-4">
@@ -669,8 +590,8 @@
                     currentView: 'geral', 
                     leads: [],
                     search: '',
-                    sortOption: 'newest', // Opção de ordenação
-                    showSortMenu: false, // Controle do menu dropdown
+                    sortOption: 'newest',
+                    showSortMenu: false,
                     sortLabels: {
                         'newest': 'Mais Recentes',
                         'oldest': 'Mais Antigos',
@@ -708,6 +629,10 @@
                 }
             },
             computed: {
+                limitedLeads() {
+                    // Retorna apenas os primeiros 100 leads da lista filtrada para performance
+                    return this.filteredLeads.slice(0, 100);
+                },
                 userDisplayName() {
                     const u = this.currentUser.toLowerCase();
                     if (u === 'admin' || u === 'lyzz' || u === 'dvyd') {
@@ -719,50 +644,52 @@
                     return 'Usuário Nomo';
                 },
                 filteredLeads() {
-                    let items = [...this.leads]; // Copia para não mutar original
+                    let items = [...this.leads]; 
 
-                    // 1. Filtro de Busca
                     if (this.search) {
                         const term = this.search.toLowerCase();
                         items = items.filter(l => (l['NOME EMPRESA'] && l['NOME EMPRESA'].toLowerCase().includes(term)) || (l['LOCAL'] && l['LOCAL'].toLowerCase().includes(term)));
                     }
 
-                    // 2. Filtro de Abas
+                    // Helpers
                     const isCompleted = (l) => { const wpp = l['STATUS WHATSAPP'] || ''; return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO'); };
+                    const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido'); };
+
+                    if (this.currentView === 'archived') {
+                        return items.filter(l => isDiscarded(l));
+                    }
+
+                    // Se não for a view de arquivados, removemos os descartados de todas as outras views
+                    items = items.filter(l => !isDiscarded(l));
+
                     if (this.currentView === 'concluidos') items = items.filter(l => isCompleted(l));
                     else if (this.currentView === 'dev') items = items.filter(l => !isCompleted(l) && !(l['STATUS DEV']||'').includes('Site Pronto'));
                     else if (this.currentView === 'editor') items = items.filter(l => { const dev = l['STATUS DEV'] || ''; return !isCompleted(l) && (dev.includes('Site Pronto') || dev.includes('Gravar') || dev.includes('Editando')) && !dev.includes('Vídeo Pronto'); });
                     else if (this.currentView === 'enviar') items = items.filter(l => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return !isCompleted(l) && dev.includes('Vídeo Pronto') && !wpp.includes('Vídeo Enviado'); });
 
-                    // 3. Ordenação (Sorting)
                     items.sort((a, b) => {
                         if (this.sortOption === 'az') return (a['NOME EMPRESA'] || '').localeCompare(b['NOME EMPRESA'] || '');
                         if (this.sortOption === 'za') return (b['NOME EMPRESA'] || '').localeCompare(a['NOME EMPRESA'] || '');
-                        
                         if (this.sortOption === 'priority') {
-                            const pA = a['PRIORIDADE (DEV)'] || '';
-                            const pB = b['PRIORIDADE (DEV)'] || '';
-                            if (pA.includes('ALTA') && !pB.includes('ALTA')) return -1;
-                            if (!pA.includes('ALTA') && pB.includes('ALTA')) return 1;
-                            return 0;
+                            const pA = a['PRIORIDADE (DEV)'] || ''; const pB = b['PRIORIDADE (DEV)'] || '';
+                            if (pA.includes('ALTA') && !pB.includes('ALTA')) return -1; if (!pA.includes('ALTA') && pB.includes('ALTA')) return 1; return 0;
                         }
-
-                        // Por padrão: Mais Recente (baseado na linha da planilha, assumindo ordem cronológica de inserção)
                         if (this.sortOption === 'newest') return b._row - a._row;
                         if (this.sortOption === 'oldest') return a._row - b._row;
-                        
                         return 0;
                     });
 
                     return items;
                 },
-                // ... stats e analytics iguais ...
                 stats() {
                     const total = this.leads.length;
                     const closed = this.leads.filter(l => (l['STATUS WHATSAPP']||'').includes('FECHADO') || (l['STATUS WHATSAPP']||'').includes('Vídeo Enviado')).length;
-                    const devPending = this.leads.filter(l => !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && !((l['STATUS DEV']||'').includes('Site Pronto') || (l['STATUS DEV']||'').includes('Não Necessário'))).length;
-                    const videoPending = this.leads.filter(l => !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && !((l['STATUS DEV']||'').includes('Vídeo Pronto')) && ((l['STATUS DEV']||'').includes('Site Pronto'))).length;
-                    const readyToSend = this.leads.filter(l => !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && (l['STATUS DEV']||'').includes('Vídeo Pronto')).length;
+                    // Lógica ajustada para stats ignorarem arquivados
+                    const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido'); };
+                    
+                    const devPending = this.leads.filter(l => !isDiscarded(l) && !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && !((l['STATUS DEV']||'').includes('Site Pronto'))).length;
+                    const videoPending = this.leads.filter(l => !isDiscarded(l) && !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && !((l['STATUS DEV']||'').includes('Vídeo Pronto')) && ((l['STATUS DEV']||'').includes('Site Pronto'))).length;
+                    const readyToSend = this.leads.filter(l => !isDiscarded(l) && !((l['STATUS WHATSAPP']||'').includes('Vídeo') || (l['STATUS WHATSAPP']||'').includes('FECHADO')) && (l['STATUS DEV']||'').includes('Vídeo Pronto')).length;
                     return { total, devPending, videoPending, closed, readyToSend };
                 },
                 analytics() {
@@ -772,38 +699,24 @@
                 }
             },
             methods: {
-                selectSort(option) {
-                    this.sortOption = option;
-                    this.showSortMenu = false;
-                },
-                closeSortMenu() {
-                    this.showSortMenu = false;
-                },
+                selectSort(option) { this.sortOption = option; this.showSortMenu = false; },
+                closeSortMenu() { this.showSortMenu = false; },
                 handleLogin() {
                     const u = this.loginForm.user.toLowerCase().trim();
                     const p = this.loginForm.pass.trim();
                     if (this.validUsers[u] && this.validUsers[u] === p) {
-                        this.loginError = '';
-                        this.currentUser = u;
-                        this.isFadingOut = true; 
+                        this.loginError = ''; this.currentUser = u; this.isFadingOut = true; 
                         localStorage.setItem('nomo_auth', JSON.stringify({ user: u, timestamp: Date.now() }));
                         setTimeout(() => { this.showLogin = false; this.showLoader = true; this.isAuthenticated = true; this.startAppFlow(); }, 1500); 
-                    } else {
-                        this.loginError = 'ACESSO NEGADO. CREDENCIAIS INVÁLIDAS.';
-                        this.loginForm.pass = '';
-                    }
+                    } else { this.loginError = 'ACESSO NEGADO. CREDENCIAIS INVÁLIDAS.'; this.loginForm.pass = ''; }
                 },
                 checkPersistence() {
                     const stored = localStorage.getItem('nomo_auth');
                     if (stored) {
                         try {
                             const data = JSON.parse(stored);
-                            if (Date.now() - data.timestamp > 3600000) { this.logout(); return; } // 1h Expiração
-                            this.currentUser = data.user;
-                            this.showLogin = false;
-                            this.isAuthenticated = true;
-                            this.startFadeOut = true; 
-                            this.startAppFlow();
+                            if (Date.now() - data.timestamp > 3600000) { this.logout(); return; } 
+                            this.currentUser = data.user; this.showLogin = false; this.isAuthenticated = true; this.startFadeOut = true; this.startAppFlow();
                         } catch(e) { localStorage.removeItem('nomo_auth'); }
                     }
                 },
@@ -815,11 +728,7 @@
                 },
                 async silentRefresh() {
                     if(this.saving) return; 
-                    try {
-                        const response = await fetch(API_URL);
-                        const newData = await response.json();
-                        if (JSON.stringify(this.leads) !== JSON.stringify(newData)) { this.leads = newData; }
-                    } catch (e) {}
+                    try { const response = await fetch(API_URL); const newData = await response.json(); if (JSON.stringify(this.leads) !== JSON.stringify(newData)) { this.leads = newData; } } catch (e) {}
                 },
                 async fetchData() {
                     this.loading = true;
