@@ -40,11 +40,10 @@
                     },
                     boxShadow: {
                         'neon': '0 0 10px rgba(168, 85, 247, 0.3), 0 0 20px rgba(168, 85, 247, 0.1)',
-                        // Sombra Glass mais leve para performance
                         'glass': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     },
                     animation: {
-                        'aurora': 'aurora 60s infinite alternate', // Mais lento para consumir menos CPU
+                        'aurora': 'aurora 60s infinite alternate',
                     },
                     keyframes: {
                         aurora: {
@@ -64,25 +63,23 @@
             overflow: hidden; 
         }
 
-        /* Otimização de Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #332452; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
         
-        /* Glass Otimizado (Menos Blur em elementos gerais) */
+        /* Glass Otimizado */
         .glass {
-            background: rgba(17, 12, 29, 0.85); /* Mais opaco para performance */
-            backdrop-filter: blur(8px); /* Blur reduzido */
+            background: rgba(17, 12, 29, 0.85);
+            backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .glass-panel {
             background: rgba(30, 20, 54, 0.6);
             border: 1px solid rgba(168, 85, 247, 0.1);
-            /* Removido backdrop-filter daqui para performance em listas longas */
             transition: transform 0.2s ease, border-color 0.2s ease;
-            will-change: transform; /* Dica para o navegador */
+            will-change: transform;
         }
         
         .glass-panel:hover {
@@ -107,7 +104,6 @@
             font-weight: 600;
         }
 
-        /* Overlay de Loading */
         .loader-overlay {
             position: fixed;
             inset: 0;
@@ -123,7 +119,7 @@
             pointer-events: none;
         }
 
-        /* Login Background Otimizado */
+        /* Login Otimizado */
         .login-wrapper {
             position: fixed;
             inset: 0;
@@ -131,7 +127,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Gradiente estático ou com animação muito lenta é melhor */
             background: linear-gradient(-45deg, #020005, #130621, #0f172a, #000000);
             background-size: 200% 200%;
             animation: aurora 60s ease infinite;
@@ -159,7 +154,7 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        /* Nav Item Simplificado para Performance */
+        /* Nav Item Simplificado */
         .nav-item-fluid {
             position: relative;
             overflow: hidden;
@@ -236,7 +231,7 @@
                     </div>
                 </div>
 
-                <!-- Navegação Rolável (Otimização de Espaço) -->
+                <!-- Navegação Rolável -->
                 <div class="flex-1 overflow-y-auto custom-scrollbar py-4">
                     <nav class="px-3 space-y-1">
                         <div class="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden lg:block">Espaços</div>
@@ -261,23 +256,20 @@
                             <i class="ph ph-check-circle text-xl"></i><span class="hidden lg:block ml-3 font-medium text-sm">Concluídos</span>
                         </button>
 
-                        <!-- Analytics Removido -->
-
                         <div class="pt-4 pb-2"><div class="h-px bg-white/5 mx-2"></div></div>
 
                         <!-- Links Externos -->
-                        <a href="editsite.html" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
+                        <a href="editsite.html" target="_blank" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
                             <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform"></i>
                             <span class="hidden lg:block ml-3 font-medium text-sm">Editor Site</span>
                         </a>
 
-                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group nav-item-fluid cursor-pointer relative z-50">
+                        <a href="https://drive.google.com/drive/folders/1spssPxfskdXvIUa2t73zzIf9TNIQ3ViX?usp=sharing" target="_blank" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-green-400 rounded-xl group nav-item-fluid cursor-pointer relative z-50">
                             <i class="ph ph-google-drive-logo text-xl"></i>
                             <span class="hidden lg:block ml-3 font-medium text-sm">Drive Prévias</span>
                         </a>
 
                         <div class="mt-4 pt-4 border-t border-white/5">
-                            <!-- Botão Arquivados -->
                             <button @click="currentView = 'archived'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid text-slate-600 hover:text-slate-400" :class="{'bg-white/5 text-slate-300': currentView === 'archived'}">
                                 <i class="ph ph-archive-box text-xl"></i>
                                 <span class="hidden lg:block ml-3 font-medium text-sm">Arquivo Morto</span>
@@ -286,7 +278,6 @@
                     </nav>
                 </div>
 
-                <!-- Parte Inferior (User) Fixa -->
                 <div class="flex-shrink-0 p-4 border-t border-white/5 bg-black/20">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-gradient-to-r from-nomo-cyan to-blue-600 p-[1px]">
@@ -312,7 +303,6 @@
                             <span v-if="currentView === 'editor'" class="text-purple-400">Espaço Editor</span>
                             <span v-if="currentView === 'enviar'" class="text-indigo-400">Sala de Envios</span>
                             <span v-if="currentView === 'concluidos'" class="text-green-400">Trabalhos Concluídos</span>
-                            <!-- Analytics Titulo Removido -->
                             <span v-if="currentView === 'archived'" class="text-slate-500">Arquivo Morto / Descartados</span>
                         </h2>
                     </div>
@@ -635,7 +625,7 @@
 
                     // Helpers
                     const isCompleted = (l) => { const wpp = l['STATUS WHATSAPP'] || ''; return wpp.includes('Vídeo Enviado') || wpp.includes('FECHADO'); };
-                    const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido'); };
+                    const isDiscarded = (l) => { const dev = l['STATUS DEV'] || ''; const wpp = l['STATUS WHATSAPP'] || ''; return dev.includes('Não Necessário') || wpp.includes('Inválido') || wpp.includes('Vácuo Eterno'); };
 
                     if (this.currentView === 'archived') {
                         return items.filter(l => isDiscarded(l));
