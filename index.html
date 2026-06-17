@@ -597,7 +597,7 @@
                     loginError: '',
                     currentUser: '',
                     loginForm: { user: '', pass: '' },
-                    validUsers: { 'admin': '2607', 'jean': '1104', 'lyzz': '2607', 'dvyd': '2607' },
+                    validUsers: { 'admin': '2607', 'lyzz': '2607', 'dvyd': '2607' },
 
                     currentView: 'geral', 
                     leads: [],
@@ -649,9 +649,6 @@
                     const u = this.currentUser.toLowerCase();
                     if (u === 'admin' || u === 'lyzz' || u === 'dvyd') {
                         return 'Bem-vindo(a), CEO';
-                    }
-                    if (u === 'jean') {
-                        return 'Bem-vindo, Jean';
                     }
                     return 'Usuário Nomo';
                 },
