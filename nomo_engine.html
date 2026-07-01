@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nomo engine | mega template</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Handlebars Motor -->
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Configuração do Tailwind (Interface) -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#09090b', panel: '#18181b', border: '#27272a', text: '#f4f4f5', muted: '#a1a1aa' },
+                        light: { bg: '#f4f4f5', panel: '#ffffff', border: '#e4e4e7', text: '#18181b', muted: '#52525b' },
+                        brand: { purple: '#a855f7', magenta: '#d946ef' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        
+        .text-metallic {
+            background: linear-gradient(135deg, #a855f7 0%, #e879f9 50%, #c084fc 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        html.dark ::-webkit-scrollbar-track { background: #09090b; }
+        html.dark ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        html.dark ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
+        html:not(.dark) ::-webkit-scrollbar-track { background: #f4f4f5; }
+        html:not(.dark) ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+        html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
+
+        .form-input {
+            width: 100%; border-radius: 0.5rem; border: 1px solid; padding: 0.5rem 0.75rem;
+            font-size: 0.875rem; outline: none; transition: all 0.2s;
+        }
+        html.dark .form-input { background: #09090b; border-color: #27272a; color: #f4f4f5; }
+        html.dark .form-input:focus { border-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,0.2); }
+        html:not(.dark) .form-input { background: #ffffff; border-color: #e4e4e7; color: #18181b; }
+        html:not(.dark) .form-input:focus { border-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,0.2); }
+
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+
+        #preview-wrapper { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); margin: 0 auto; }
+        
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px;
+            color: white; font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(20px);
+            transition: all 0.3s ease; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text transition-colors duration-300">
+
+    <!-- Header Nomo Engine -->
+    <header class="bg-light-panel dark:bg-dark-panel border-b border-light-border dark:border-dark-border py-3 px-6 flex justify-between items-center z-20 shrink-0 transition-colors duration-300 shadow-sm">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-black tracking-widest text-metallic lowercase select-none">nomo engine</h1>
+            <span class="px-2 py-1 bg-brand-purple/10 text-brand-purple text-[10px] font-bold uppercase rounded-md tracking-widest">Mega Builder</span>
+        </div>
+
+        <div class="flex gap-4 items-center">
+            <button id="btn-theme" class="w-10 h-10 rounded-full flex items-center justify-center bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border text-light-muted dark:text-dark-muted hover:text-brand-purple transition-all shadow-sm">
+                <i class="fas fa-sun dark:hidden"></i>
+                <i class="fas fa-moon hidden dark:block"></i>
+            </button>
+
+            <div class="w-px h-8 bg-light-border dark:bg-dark-border mx-2"></div>
+
+            <div class="flex bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg overflow-hidden shadow-sm">
+                <button id="btn-desktop" class="px-4 py-2 text-brand-purple bg-light-border/50 dark:bg-dark-border/50 transition-colors">
+                    <i class="fas fa-desktop"></i>
+                </button>
+                <button id="btn-mobile" class="px-4 py-2 text-light-muted dark:text-dark-muted hover:text-brand-purple transition-colors">
+                    <i class="fas fa-mobile-alt"></i>
+                </button>
+            </div>
+
+            <button id="btn-gerar" class="bg-light-bg dark:bg-dark-bg hover:border-brand-purple text-light-text dark:text-dark-text px-6 py-2 rounded-lg text-sm font-semibold transition-all border border-light-border dark:border-dark-border flex items-center gap-2 shadow-sm">
+                <i class="fas fa-sync-alt text-brand-purple"></i> Forçar Render
+            </button>
+            
+            <button id="btn-baixar" class="bg-gradient-to-r from-brand-purple to-brand-magenta hover:brightness-110 text-white px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-md">
+                <i class="fas fa-download"></i> Exportar Site
+            </button>
+        </div>
+    </header>
+
+    <!-- Layout Principal -->
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- PAINEL ESQUERDO (DADOS JSON E FORMULÁRIO) -->
+        <section class="w-[35%] flex flex-col border-r border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg z-10 relative transition-colors duration-300 min-w-[380px]">
+            
+            <!-- Tabs Headers -->
+            <div class="flex border-b border-light-border dark:border-dark-border bg-light-panel dark:bg-dark-panel transition-colors duration-300">
+                <button class="tab-left active flex-1 py-3 text-xs uppercase tracking-widest font-bold border-b-2 border-brand-purple text-brand-purple transition-colors flex justify-center items-center gap-2" data-target="tab-form">
+                    <i class="fas fa-sliders-h"></i> Painel Visual
+                </button>
+                <button class="tab-left flex-1 py-3 text-xs uppercase tracking-widest font-bold border-b-2 border-transparent text-light-muted dark:text-dark-muted hover:text-light-text dark:hover:text-dark-text transition-colors flex justify-center items-center gap-2" data-target="tab-json">
+                    <i class="fas fa-code"></i> Injetar JSON
+                </button>
+            </div>
+
+            <!-- Tab Content: Formulário Visual -->
+            <div id="tab-form" class="flex-1 overflow-y-auto p-5 tab-pane-left bg-light-bg dark:bg-dark-bg">
+                <div class="text-[11px] text-light-muted dark:text-dark-muted mb-4 px-2 bg-brand-purple/5 p-3 rounded-lg border border-brand-purple/20">
+                    <i class="fas fa-info-circle text-brand-purple mr-1"></i> As seções de <b>Jornada, FAQ, Blog, E-book e Segurança</b> são geradas automaticamente com o Copywriting Padrão de Luxo da Nomo para economizar tokens da IA.
+                </div>
+                <!-- O Formulário Dinâmico será renderizado aqui -->
+                <div id="dynamic-form-container" class="space-y-3 pb-10"></div>
+            </div>
+
+            <!-- Tab Content: Raw JSON -->
+            <div id="tab-json" class="flex-1 hidden flex-col overflow-hidden tab-pane-left bg-light-panel dark:bg-dark-panel">
+                <div class="p-3 border-b border-light-border dark:border-dark-border flex justify-between items-center text-xs">
+                    <span class="text-light-muted dark:text-dark-muted">Cole o JSON gerado pela IA</span>
+                    <button id="btn-sync-to-form" class="bg-brand-purple/10 text-brand-purple px-3 py-1.5 rounded hover:bg-brand-purple/20 transition-colors font-bold uppercase tracking-wider text-[10px]">
+                        <i class="fas fa-magic mr-1"></i> Preencher Painel
+                    </button>
+                </div>
+                <textarea id="json-input" class="flex-1 w-full bg-transparent text-brand-purple dark:text-[#A78BFA] font-mono text-[12px] p-5 outline-none resize-none leading-relaxed" spellcheck="false" placeholder="Cole o código JSON aqui..."></textarea>
+            </div>
+        </section>
+
+        <!-- PAINEL DIREITO (OUTPUT) -->
+        <section class="w-[65%] bg-[#e5e5e5] dark:bg-[#050505] relative flex flex-col transition-colors duration-300">
+            
+            <!-- Tabs Headers Output -->
+            <div class="flex border-b border-light-border dark:border-dark-border bg-light-panel dark:bg-dark-panel z-20 transition-colors duration-300">
+                <button class="tab-right active flex-1 py-3 text-xs uppercase tracking-widest font-bold border-b-2 border-brand-purple text-brand-purple transition-colors flex justify-center items-center gap-2" data-target="out-preview">
+                    <i class="fas fa-eye"></i> Visualizador Live
+                </button>
+                <button class="tab-right flex-1 py-3 text-xs uppercase tracking-widest font-bold border-b-2 border-transparent text-light-muted dark:text-dark-muted hover:text-light-text dark:hover:text-dark-text transition-colors flex justify-center items-center gap-2" data-target="out-code">
+                    <i class="fas fa-html5"></i> Ver Código Gerado
+                </button>
+            </div>
+
+            <!-- Output: Iframe Preview -->
+            <div id="out-preview" class="flex-1 relative flex flex-col overflow-hidden justify-center items-center tab-pane-right">
+                <div id="preview-wrapper" class="w-full h-full bg-white dark:bg-black shadow-2xl relative border-x border-light-border dark:border-dark-border overflow-hidden">
+                    <iframe id="preview-frame" class="w-full h-full border-none absolute inset-0 bg-white"></iframe>
+                </div>
+            </div>
+
+            <!-- Output: Código HTML Fonte -->
+            <div id="out-code" class="flex-1 hidden relative flex-col tab-pane-right bg-light-panel dark:bg-dark-panel">
+                <button id="btn-copy-code" class="absolute top-4 right-6 z-30 bg-brand-purple hover:bg-brand-magenta text-white px-5 py-2.5 rounded-lg text-xs uppercase tracking-widest font-bold shadow-lg transition-all flex items-center gap-2">
+                    <i class="fas fa-copy"></i> Copiar HTML
+                </button>
+                <textarea id="html-code-view" class="flex-1 w-full bg-transparent text-light-muted dark:text-dark-muted font-mono text-[12px] p-6 pt-16 outline-none resize-none leading-relaxed" spellcheck="false" readonly placeholder="O código HTML final aparecerá aqui..."></textarea>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Toast -->
+    <div id="toast-msg" class="toast bg-green-500"></div>
+
+    <!-- ========================================================================= -->
+    <!-- MASTER TEMPLATE BLINDADO (15 SEÇÕES) -->
+    <!-- ========================================================================= -->
+    <template id="master-template">
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{profissional.nome_completo}} | Cirurgia Plástica de Luxo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nomo-bg': '{{configuracao.paleta.cor_fundo}}',
+                        'nomo-card': '{{configuracao.paleta.cor_card}}',
+                        'nomo-gold': '{{configuracao.paleta.cor_destaque}}',
+                        'nomo-text': '{{configuracao.paleta.cor_texto}}',
+                        'nomo-muted': '{{configuracao.paleta.cor_texto_secundario}}',
+                    },
+                    fontFamily: { serif: ['"Playfair Display"', 'serif'], sans: ['"Montserrat"', 'sans-serif'] },
+                    borderRadius: { '4xl': '2rem', '5xl': '3rem' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: {{configuracao.paleta.cor_fundo}}; color: {{configuracao.paleta.cor_texto}}; overflow-x: hidden; }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .glass-panel { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: {{configuracao.paleta.cor_fundo}}; }
+        ::-webkit-scrollbar-thumb { background: {{configuracao.paleta.cor_card}}; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: {{configuracao.paleta.cor_destaque}}; }
+        details > summary { list-style: none; } details > summary::-webkit-details-marker { display: none; }
+        
+        .loader-ring { width: 80px; height: 80px; border: 2px solid {{configuracao.paleta.cor_destaque}}; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased font-sans">
+    
+    <!-- 1. PRELOADER -->
+    <div id="preloader" class="fixed inset-0 z-[100] bg-nomo-bg flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="loader-ring mb-6"></div>
+        <h1 class="font-serif italic text-3xl text-nomo-gold tracking-widest">{{profissional.nome_completo}}</h1>
+        <p class="text-[9px] uppercase tracking-[0.4em] text-nomo-muted mt-3">{{profissional.especialidade}}</p>
+    </div>
+
+    <!-- 2. NAVBAR -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-500 py-6 bg-gradient-to-b from-nomo-bg/90 to-transparent">
+        <div class="container mx-auto px-6 lg:px-12 flex justify-between items-center">
+            <a href="#" class="group z-50 flex items-center gap-3">
+                <div class="flex flex-col">
+                    <span class="font-serif text-2xl text-nomo-text group-hover:text-nomo-gold transition-colors duration-300">{{profissional.nome_completo}}</span>
+                    <span class="text-[8px] uppercase tracking-[0.3em] text-nomo-muted font-light mt-1">{{profissional.especialidade}}</span>
+                </div>
+            </a>
+            <div class="hidden lg:flex items-center space-x-8">
+                <a href="#sobre" class="text-[10px] uppercase tracking-[0.15em] text-nomo-text/80 hover:text-nomo-gold transition-colors">O Especialista</a>
+                <a href="#jornada" class="text-[10px] uppercase tracking-[0.15em] text-nomo-text/80 hover:text-nomo-gold transition-colors">Jornada</a>
+                <a href="#servicos" class="text-[10px] uppercase tracking-[0.15em] text-nomo-text/80 hover:text-nomo-gold transition-colors">Procedimentos</a>
+                <a href="#faq" class="text-[10px] uppercase tracking-[0.15em] text-nomo-text/80 hover:text-nomo-gold transition-colors">FAQ</a>
+                <a href="{{contato.whatsapp_link}}" target="_blank" class="border border-nomo-gold/50 text-nomo-gold px-8 py-3 uppercase text-[10px] font-semibold tracking-[0.2em] hover:bg-nomo-gold hover:text-nomo-bg transition-all duration-500 rounded-full">
+                    Agendar Avaliação
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 3. HERO -->
+    <header class="relative h-screen w-full flex items-center overflow-hidden bg-nomo-bg">
+        <div class="absolute inset-0 bg-gradient-to-t from-nomo-bg via-nomo-bg/40 to-transparent z-20"></div>
+        <div class="absolute inset-0 bg-black/40 z-10 mix-blend-multiply"></div>
+        <img src="{{hero.background_image_url}}" class="absolute inset-0 w-full h-full object-cover opacity-60 grayscale-[30%] z-0" alt="Hero Background">
+        <div class="relative z-30 px-6 md:px-12 container mx-auto mt-20 reveal">
+            <div class="max-w-4xl">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="h-[1px] w-12 bg-nomo-gold"></div>
+                    <span class="text-nomo-gold uppercase tracking-[0.3em] text-[10px] font-semibold">{{profissional.local_nome}}</span>
+                </div>
+                <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl text-nomo-text mb-8 leading-[1.1] font-light">{{hero.headline}}</h1>
+                <p class="text-nomo-text/80 font-light text-base md:text-xl mb-12 max-w-2xl leading-relaxed border-l-2 border-nomo-gold/30 pl-6">{{hero.subheadline}}</p>
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <a href="{{contato.whatsapp_link}}" target="_blank" class="bg-nomo-gold text-nomo-bg px-10 py-4 uppercase tracking-[0.2em] text-[11px] font-bold hover:bg-white transition-all duration-500 rounded-full text-center">
+                        Iniciar Planejamento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 4. PRESTIGE BAR (PADRÃO) -->
+    <section class="py-8 bg-nomo-card border-y border-white/5 relative z-30">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-60">
+                <div class="flex items-center gap-3"><i class="fas fa-shield-alt text-nomo-gold text-xl"></i><span class="text-nomo-text text-[10px] md:text-xs uppercase tracking-widest font-serif">Membro SBCP</span></div>
+                <div class="flex items-center gap-3"><i class="fas fa-user-md text-nomo-gold text-xl"></i><span class="text-nomo-text text-[10px] md:text-xs uppercase tracking-widest font-serif">{{profissional.crm}}</span></div>
+                <div class="flex items-center gap-3"><i class="fas fa-globe text-nomo-gold text-xl"></i><span class="text-nomo-text text-[10px] md:text-xs uppercase tracking-widest font-serif">Padrão Internacional</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. O DOUTOR -->
+    <section id="sobre" class="py-24 md:py-32 bg-nomo-bg relative overflow-hidden">
+        <div class="container mx-auto px-6 lg:px-12 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+                <div class="w-full lg:w-5/12 reveal">
+                    <div class="relative pl-6 pt-6">
+                        <div class="absolute top-0 left-0 w-full h-full border border-nomo-gold/30 rounded-[2rem] z-0"></div>
+                        <img src="{{profissional.foto_url}}" class="relative z-10 w-full rounded-[2rem] shadow-2xl object-cover h-[500px] md:h-[650px] grayscale-[20%]" alt="{{profissional.nome_completo}}">
+                        <div class="absolute bottom-10 -right-4 bg-nomo-card p-6 rounded-2xl z-20 shadow-2xl max-w-[280px] border border-white/5">
+                            <p class="font-serif italic text-nomo-text text-lg">"{{profissional.frase_impacto}}"</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full lg:w-7/12 space-y-8 reveal delay-200">
+                    <div>
+                        <span class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold mb-3 block">{{profissional.nome_completo}}</span>
+                        <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-nomo-text leading-tight">Arte Médica & <br><span class="italic text-nomo-muted text-3xl md:text-4xl">{{profissional.especialidade}}</span></h2>
+                    </div>
+                    <div class="text-nomo-muted font-light leading-relaxed text-sm md:text-base space-y-6">
+                        <p>{{profissional.bio_completa}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. JORNADA (PADRÃO) -->
+    <section id="jornada" class="py-24 bg-nomo-card relative overflow-hidden border-y border-white/5">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center mb-20 reveal">
+                <span class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold">O Caminho para a Excelência</span>
+                <h2 class="font-serif text-4xl md:text-5xl text-nomo-text mt-4">Sua Jornada Premium</h2>
+            </div>
+            <div class="flex flex-col md:flex-row justify-center items-start gap-12 relative max-w-5xl mx-auto">
+                <div class="hidden md:block absolute top-12 left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-transparent via-nomo-gold/50 to-transparent z-0"></div>
+                
+                <div class="relative z-10 flex flex-col items-center text-center w-full md:w-1/3 reveal">
+                    <div class="w-24 h-24 rounded-full glass-panel border border-nomo-gold/50 flex items-center justify-center mb-6 shadow-lg"><span class="font-serif italic text-3xl text-nomo-gold">01</span></div>
+                    <h3 class="text-nomo-text font-serif text-xl mb-3">Planejamento Tailor-Made</h3>
+                    <p class="text-nomo-muted text-sm font-light leading-relaxed px-4">Consulta aprofundada, análise anatômica e alinhamento total de expectativas.</p>
+                </div>
+                
+                <div class="relative z-10 flex flex-col items-center text-center w-full md:w-1/3 reveal delay-100">
+                    <div class="w-24 h-24 rounded-full glass-panel border border-nomo-gold/50 flex items-center justify-center mb-6 shadow-lg"><span class="font-serif italic text-3xl text-nomo-gold">02</span></div>
+                    <h3 class="text-nomo-text font-serif text-xl mb-3">Experiência Hospitalar</h3>
+                    <p class="text-nomo-muted text-sm font-light leading-relaxed px-4">Cirurgia realizada nos melhores hospitais, com equipamentos de ponta e suporte UTI.</p>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center text-center w-full md:w-1/3 reveal delay-200">
+                    <div class="w-24 h-24 rounded-full glass-panel border border-nomo-gold/50 flex items-center justify-center mb-6 shadow-lg"><span class="font-serif italic text-3xl text-nomo-gold">03</span></div>
+                    <h3 class="text-nomo-text font-serif text-xl mb-3">Recuperação Concierge</h3>
+                    <p class="text-nomo-muted text-sm font-light leading-relaxed px-4">Acompanhamento contínuo no pós-operatório com suporte premium e discrição absoluta.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. SERVIÇOS (DINÂMICO) -->
+    <section id="servicos" class="py-32 bg-nomo-bg relative">
+        <div class="container mx-auto px-6 lg:px-12">
+            <div class="text-center mb-16 reveal">
+                <span class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold block mb-2">Intervenções de Prestígio</span>
+                <h2 class="font-serif text-4xl md:text-5xl text-nomo-text">Menu de Tratamentos</h2>
+            </div>
+            <div class="flex flex-wrap justify-center gap-6 lg:gap-8">
+                {{#each servicos}}
+                <div class="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1.4rem)] group relative h-[480px] rounded-3xl overflow-hidden cursor-pointer reveal border border-white/5 shadow-xl bg-nomo-card">
+                    <div class="absolute inset-0 bg-gradient-to-t from-nomo-bg via-nomo-bg/50 to-transparent z-10 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                    <img src="{{this.imagem_url}}" alt="{{this.titulo}}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[30%]">
+                    <div class="absolute bottom-0 left-0 w-full p-8 z-20 flex flex-col justify-end h-full">
+                        <div class="w-8 h-[2px] bg-nomo-gold mb-5 origin-left scale-x-50 group-hover:scale-x-100 transition-transform"></div>
+                        <h3 class="font-serif text-2xl text-nomo-text mb-2 leading-tight">{{this.titulo}}</h3>
+                        <div class="overflow-hidden h-0 group-hover:h-24 transition-all duration-700 ease-in-out mt-2">
+                            <p class="text-nomo-text/70 text-sm font-light leading-relaxed">{{this.descricao}}</p>
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. CINEMA CONCEPT (PADRÃO) -->
+    <section class="relative w-full h-[70vh] bg-nomo-bg overflow-hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-nomo-bg/60 z-20 pointer-events-none mix-blend-multiply"></div>
+        <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-10 opacity-70 grayscale-[20%]" src="https://cdn.pixabay.com/video/2021/08/25/86266-592780727_large.mp4"></video>
+        <div class="relative z-30 text-center px-6 reveal">
+            <div class="w-16 h-16 border border-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm"><i class="fas fa-gem text-white/80 text-xl"></i></div>
+            <h2 class="font-serif italic text-4xl md:text-6xl lg:text-7xl text-white mb-6 drop-shadow-2xl">A Arte da Precisão</h2>
+            <p class="text-white/80 tracking-[0.3em] uppercase text-xs md:text-sm font-light max-w-xl mx-auto">Tecnologia, segurança e o olhar refinado de quem domina a anatomia.</p>
+        </div>
+    </section>
+
+    <!-- 9. SEGURANÇA & CONCIERGE (PADRÃO) -->
+    <section class="py-24 bg-nomo-card relative border-y border-white/5">
+        <div class="container mx-auto px-6 lg:px-12">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="space-y-8 reveal">
+                    <div class="w-14 h-14 rounded-full border border-nomo-gold flex items-center justify-center mb-4"><i class="fas fa-shield-alt text-nomo-gold text-lg"></i></div>
+                    <h3 class="font-serif text-3xl md:text-4xl text-nomo-text">Segurança Inegociável</h3>
+                    <p class="text-nomo-muted font-light leading-relaxed text-sm md:text-base">
+                        Todas as cirurgias são realizadas rigorosamente em hospitais de excelência, dotados de UTI e suporte avançado. A infraestrutura premium é pré-requisito fundamental para a nossa atuação.
+                    </p>
+                </div>
+                <div class="space-y-8 reveal delay-100">
+                    <div class="w-14 h-14 rounded-full border border-nomo-gold flex items-center justify-center mb-4"><i class="fas fa-concierge-bell text-nomo-gold text-lg"></i></div>
+                    <h3 class="font-serif text-3xl md:text-4xl text-nomo-text italic">A Experiência Concierge</h3>
+                    <p class="text-nomo-muted font-light leading-relaxed text-sm md:text-base">
+                        Entendemos que o luxo verdadeiro reside na paz de espírito. Nosso serviço orquestra agendamentos, trâmites hospitalares e suporte no pós-operatório com absoluta discrição e conforto.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. DEPOIMENTO (DINÂMICO) -->
+    <section class="py-24 bg-nomo-bg relative overflow-hidden">
+        <div class="absolute -left-10 top-1/2 -translate-y-1/2 text-[200px] text-white/5 font-serif italic select-none">"</div>
+        <div class="container mx-auto px-6 relative z-10 text-center max-w-4xl reveal">
+            <span class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold block mb-10">Vozes da Excelência</span>
+            <p class="font-serif text-2xl md:text-4xl italic text-nomo-text leading-relaxed mb-10">"{{prova_social.depoimento_texto}}"</p>
+            <div class="flex flex-col items-center">
+                <p class="font-bold text-nomo-text uppercase tracking-widest text-xs">{{prova_social.autor}}</p>
+                <p class="text-nomo-gold/80 text-[10px] mt-1 tracking-wider uppercase">{{prova_social.detalhe_procedimento}}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. BLOG EDITORIAL (PADRÃO) -->
+    <section class="py-24 bg-nomo-card relative border-t border-white/5">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <span class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold">Conteúdo Exclusivo</span>
+                <h2 class="font-serif text-4xl text-nomo-text mt-4">Acervo <span class="italic">Editorial</span></h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Blog 1 -->
+                <article class="group cursor-pointer reveal glass-panel rounded-3xl overflow-hidden">
+                    <div class="h-56 overflow-hidden relative bg-black">
+                        <div class="absolute inset-0 bg-nomo-bg/50 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1612349317150-e410f624c427?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[20%]">
+                    </div>
+                    <div class="p-8 border-t border-white/5">
+                        <span class="text-nomo-gold text-[9px] uppercase tracking-widest mb-3 block font-bold">Pós-Operatório</span>
+                        <h3 class="font-serif text-xl text-nomo-text mb-3 group-hover:text-nomo-gold transition-colors">A Arte da Recuperação Guiada</h3>
+                        <p class="text-nomo-muted text-sm font-light line-clamp-2">Como os protocolos de drenagem são essenciais para lapidar os resultados da sua cirurgia de forma perfeita.</p>
+                    </div>
+                </article>
+                <!-- Blog 2 -->
+                <article class="group cursor-pointer reveal delay-100 glass-panel rounded-3xl overflow-hidden">
+                    <div class="h-56 overflow-hidden relative bg-black">
+                        <div class="absolute inset-0 bg-nomo-bg/50 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[20%]">
+                    </div>
+                    <div class="p-8 border-t border-white/5">
+                        <span class="text-nomo-gold text-[9px] uppercase tracking-widest mb-3 block font-bold">Arquitetura Corporal</span>
+                        <h3 class="font-serif text-xl text-nomo-text mb-3 group-hover:text-nomo-gold transition-colors">O Guia da Alta Definição</h3>
+                        <p class="text-nomo-muted text-sm font-light line-clamp-2">Desmistificando as técnicas que permitem desenhar músculos e curvas com naturalidade e precisão absoluta.</p>
+                    </div>
+                </article>
+                <!-- Blog 3 -->
+                <article class="group cursor-pointer reveal delay-200 glass-panel rounded-3xl overflow-hidden">
+                    <div class="h-56 overflow-hidden relative bg-black">
+                        <div class="absolute inset-0 bg-nomo-bg/50 group-hover:bg-transparent transition-colors z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[20%]">
+                    </div>
+                    <div class="p-8 border-t border-white/5">
+                        <span class="text-nomo-gold text-[9px] uppercase tracking-widest mb-3 block font-bold">Estética Mamária</span>
+                        <h3 class="font-serif text-xl text-nomo-text mb-3 group-hover:text-nomo-gold transition-colors">A Escolha do Volume Ideal</h3>
+                        <p class="text-nomo-muted text-sm font-light line-clamp-2">Como a análise anatômica 3D guia a seleção de implantes para um colo elegante, harmonioso e indetectável.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- 12. E-BOOK LEAD MAGNET (PADRÃO) -->
+    <section class="py-20 bg-nomo-bg relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 mix-blend-screen"></div>
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="glass-panel p-10 md:p-14 rounded-4xl border border-nomo-gold/20 flex flex-col md:flex-row items-center justify-between gap-10 reveal shadow-2xl">
+                <div class="w-full md:w-2/3 text-center md:text-left">
+                    <h3 class="font-serif text-3xl md:text-4xl text-nomo-text mb-3 italic">Guia Exclusivo de Preparação</h3>
+                    <p class="text-nomo-text/70 font-light text-sm md:text-base max-w-xl">O manifesto definitivo da cirurgia de luxo. Entenda todos os passos, cuidados pré e pós-operatórios para uma transformação perfeita.</p>
+                </div>
+                <div class="w-full md:w-1/3 flex justify-center md:justify-end">
+                    <a href="{{contato.whatsapp_link}}" target="_blank" class="bg-nomo-gold text-nomo-bg px-8 py-4 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-white hover:text-nomo-bg transition-colors whitespace-nowrap shadow-lg">
+                        <i class="fas fa-download mr-2"></i> Baixar Guia PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 13. FAQ (PADRÃO) -->
+    <section id="faq" class="py-24 bg-nomo-card">
+        <div class="container mx-auto px-6 lg:px-12 max-w-4xl reveal">
+            <div class="text-center mb-16">
+                <span class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold">Transparência</span>
+                <h2 class="font-serif text-3xl md:text-4xl text-nomo-text mt-3">Dúvidas Frequentes</h2>
+            </div>
+            <div class="space-y-4">
+                <details class="group glass-panel rounded-2xl p-6 cursor-pointer">
+                    <summary class="flex justify-between items-center font-serif text-lg text-nomo-text outline-none">Qual o tempo médio de recuperação? <span class="transition-transform group-open:rotate-180 text-nomo-gold"><i class="fas fa-chevron-down text-sm"></i></span></summary>
+                    <div class="text-nomo-muted font-light text-sm mt-4 leading-relaxed border-t border-white/5 pt-4">A recuperação é altamente individualizada. Utilizamos protocolos de Fast Track Recovery para acelerar o processo e diminuir o desconforto, permitindo retornos mais rápidos às atividades leves sob supervisão.</div>
+                </details>
+                <details class="group glass-panel rounded-2xl p-6 cursor-pointer">
+                    <summary class="flex justify-between items-center font-serif text-lg text-nomo-text outline-none">Onde as cirurgias são realizadas? <span class="transition-transform group-open:rotate-180 text-nomo-gold"><i class="fas fa-chevron-down text-sm"></i></span></summary>
+                    <div class="text-nomo-muted font-light text-sm mt-4 leading-relaxed border-t border-white/5 pt-4">Por absoluto respeito à sua segurança, todos os procedimentos são executados em hospitais de altíssimo padrão, equipados com UTI completa e centros cirúrgicos com tecnologia de ponta.</div>
+                </details>
+                <details class="group glass-panel rounded-2xl p-6 cursor-pointer">
+                    <summary class="flex justify-between items-center font-serif text-lg text-nomo-text outline-none">Posso associar procedimentos (Ex: Mama e Lipo)? <span class="transition-transform group-open:rotate-180 text-nomo-gold"><i class="fas fa-chevron-down text-sm"></i></span></summary>
+                    <div class="text-nomo-muted font-light text-sm mt-4 leading-relaxed border-t border-white/5 pt-4">Sim, as cirurgias combinadas são frequentes. No entanto, dependem de uma avaliação clínica minuciosa do tempo cirúrgico e exames. A prioridade é garantir que a associação mantenha a máxima segurança.</div>
+                </details>
+            </div>
+            <p class="text-center mt-12 text-[10px] text-nomo-muted uppercase tracking-widest font-light">Em conformidade com as diretrizes do Conselho Federal de Medicina (CFM).</p>
+        </div>
+    </section>
+
+    <!-- 14. FOOTER -->
+    <footer class="bg-nomo-bg pt-24 pb-12 border-t border-white/10">
+        <div class="container mx-auto px-6 lg:px-12">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
+                <div class="lg:col-span-4 space-y-6">
+                    <span class="font-serif italic text-3xl md:text-4xl text-nomo-text block mb-2">{{profissional.nome_completo}}</span>
+                    <p class="text-[9px] tracking-[0.3em] text-nomo-gold uppercase font-bold">{{profissional.crm}}</p>
+                    <p class="text-nomo-muted font-light text-sm leading-relaxed mt-4 max-w-sm">Excelência técnica e sofisticação no cuidado. Uma experiência premium focada em resultados naturais e segurança absoluta.</p>
+                    <div class="flex gap-4 mt-6">
+                        <a href="{{contato.whatsapp_link}}" target="_blank" class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-nomo-text hover:bg-nomo-gold hover:text-nomo-bg transition-all"><i class="fab fa-whatsapp text-lg"></i></a>
+                        <a href="{{contato.instagram_link}}" target="_blank" class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center text-nomo-text hover:bg-nomo-gold hover:text-nomo-bg transition-all"><i class="fab fa-instagram text-lg"></i></a>
+                    </div>
+                </div>
+                <div class="lg:col-span-4 space-y-8">
+                    <div class="glass-panel p-6 rounded-3xl">
+                        <h4 class="text-nomo-text font-serif text-xl mb-4">Falar com Concierge</h4>
+                        <form onsubmit="event.preventDefault(); window.open('{{contato.whatsapp_link}}', '_blank');" class="space-y-4">
+                            <input type="text" placeholder="Nome Completo" class="w-full bg-transparent border-b border-white/20 py-2 text-sm text-white focus:outline-none focus:border-nomo-gold transition-colors font-light">
+                            <button type="submit" class="w-full mt-4 bg-nomo-gold text-nomo-bg py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:bg-white transition-colors">Enviar Solicitação</button>
+                        </form>
+                    </div>
+                    <div>
+                        <h4 class="text-nomo-gold uppercase tracking-[0.2em] text-[10px] font-bold mb-4">Localização Premium</h4>
+                        <p class="text-nomo-text/70 font-light text-sm leading-loose">{{contato.endereco_completo}}</p>
+                    </div>
+                </div>
+                <div class="lg:col-span-4 h-64 lg:h-full min-h-[250px] bg-nomo-card rounded-3xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 border border-white/10 shadow-lg">
+                    <!-- Mapa dinâmico via endereço JSON -->
+                    <iframe src="https://maps.google.com/maps?q={{contato.endereco_completo}}&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-nomo-muted uppercase tracking-widest gap-4 text-center md:text-left">
+                <p>© 2026 {{profissional.nome_completo}}. Todos os direitos reservados.</p>
+                <p>Nomo Luxury Design</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 15. FLOTANTE WHATSAPP -->
+    <a href="{{contato.whatsapp_link}}" target="_blank" class="fixed bottom-8 right-8 z-50 bg-[#25D366] text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:bg-[#20bd5a] hover:scale-110 transition-all animate-pulse group">
+        <i class="fab fa-whatsapp text-3xl group-hover:rotate-12 transition-transform"></i>
+    </a>
+
+    <script>
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            setTimeout(() => { preloader.classList.add('opacity-0'); setTimeout(() => { preloader.style.display = 'none'; }, 700); }, 1200);
+        });
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-nomo-bg/95', 'backdrop-blur-lg', 'shadow-xl', 'py-4');
+                navbar.classList.remove('bg-gradient-to-b', 'from-nomo-bg/90', 'to-transparent', 'py-6');
+            } else {
+                navbar.classList.remove('bg-nomo-bg/95', 'backdrop-blur-lg', 'shadow-xl', 'py-4');
+                navbar.classList.add('bg-gradient-to-b', 'from-nomo-bg/90', 'to-transparent', 'py-6');
+            }
+        });
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            revealElements.forEach((reveal) => {
+                if (reveal.getBoundingClientRect().top < windowHeight - 100) reveal.classList.add('active');
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll); revealOnScroll();
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        function toggleMenu() {
+            mobileMenu.classList.toggle('translate-x-full');
+            const icon = mobileBtn.querySelector('i');
+            icon.classList.toggle('fa-bars'); icon.classList.toggle('fa-times');
+        }
+        mobileBtn.addEventListener('click', toggleMenu);
+        const details = document.querySelectorAll("details");
+        details.forEach((targetDetail) => {
+            targetDetail.addEventListener("click", () => {
+                details.forEach((detail) => { if (detail !== targetDetail) detail.removeAttribute("open"); });
+            });
+        });
+    </script>
+</body>
+</html>
+    </template>
+    <!-- ========================================================================= -->
+
+    <!-- Motor JS da Plataforma -->
+    <script>
+        const jsonInput = document.getElementById('json-input');
+        const dynamicFormContainer = document.getElementById('dynamic-form-container');
+        const btnGerar = document.getElementById('btn-gerar');
+        const btnBaixar = document.getElementById('btn-baixar');
+        const previewFrame = document.getElementById('preview-frame');
+        const htmlCodeView = document.getElementById('html-code-view');
+        const btnCopyCode = document.getElementById('btn-copy-code');
+        const btnSyncToForm = document.getElementById('btn-sync-to-form');
+        
+        const btnTheme = document.getElementById('btn-theme');
+        const htmlElement = document.documentElement;
+        const btnDesktop = document.getElementById('btn-desktop');
+        const btnMobile = document.getElementById('btn-mobile');
+        const previewWrapper = document.getElementById('preview-wrapper');
+
+        const tabBtnsLeft = document.querySelectorAll('.tab-left');
+        const tabPanesLeft = document.querySelectorAll('.tab-pane-left');
+        const tabBtnsRight = document.querySelectorAll('.tab-right');
+        const tabPanesRight = document.querySelectorAll('.tab-pane-right');
+        
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast-msg');
+            toast.innerHTML = isError ? `<i class="fas fa-times-circle mr-2"></i> ${msg}` : `<i class="fas fa-check-circle mr-2"></i> ${msg}`;
+            toast.className = `toast show ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // O PADRÃO EXATO QUE A IA GERADORA DEVE CUSPIR
+        let appData = {
+            "configuracao": {
+                "paleta": {
+                    "cor_fundo": "#0F172A",
+                    "cor_card": "#1E293B",
+                    "cor_destaque": "#D4AF37",
+                    "cor_texto": "#F8FAFC",
+                    "cor_texto_secundario": "#94A3B8"
+                }
+            },
+            "profissional": {
+                "nome_completo": "Dr. Exemplo Médico",
+                "especialidade": "Mestre em Arquitetura Corporal",
+                "crm": "CRM-XX 00000",
+                "frase_impacto": "A elevação da forma humana através do luxo silencioso.",
+                "bio_completa": "Com excelência forjada nos mais altos padrões, oferece uma experiência indetectável. Foco em precisão absoluta.",
+                "foto_url": "foto_medico.png",
+                "local_nome": "Complexo Empresarial Rio Mar"
+            },
+            "hero": {
+                "headline": "A Arte da Proporção Perfeita",
+                "subheadline": "O encontro absoluto entre ciência médica e o luxo silencioso.",
+                "background_image_url": "bg_hero.jpg"
+            },
+            "servicos": [
+                { "titulo": "Engenharia Tridimensional", "descricao": "Redesenho estratégico da silhueta.", "imagem_url": "servico1.jpg" },
+                { "titulo": "Design Mamário", "descricao": "Seleção minuciosa para um decote sofisticado.", "imagem_url": "servico2.jpg" },
+                { "titulo": "Restauração Profunda", "descricao": "Devolvendo a firmeza do contorno.", "imagem_url": "servico3.jpg" }
+            ],
+            "prova_social": {
+                "depoimento_texto": "A experiência transcendeu minhas expectativas.",
+                "autor": "V. M. - Empresária",
+                "detalhe_procedimento": "Experiência High-Ticket"
+            },
+            "contato": {
+                "whatsapp_link": "https://wa.me/55999999999",
+                "instagram_link": "https://instagram.com/",
+                "endereco_completo": "Torre Empresarial Rio Mar, Recife - PE"
+            }
+        };
+
+        jsonInput.value = JSON.stringify(appData, null, 4);
+
+        let renderTimeout;
+        function debounceRender() {
+            clearTimeout(renderTimeout);
+            renderTimeout = setTimeout(() => { compileTemplate(); }, 200);
+        }
+
+        // Criador de Sanfonas
+        function createAccordion(title, icon, content, isOpen = false) {
+            return `
+                <details class="bg-light-panel dark:bg-dark-panel border border-light-border dark:border-dark-border rounded-xl shadow-sm overflow-hidden group" ${isOpen ? 'open' : ''}>
+                    <summary class="p-4 font-semibold text-sm cursor-pointer flex justify-between items-center bg-gray-50/50 dark:bg-[#1f1f22] hover:bg-gray-100 dark:hover:bg-[#27272a] transition-colors outline-none select-none">
+                        <span class="flex items-center gap-2"><i class="${icon} text-brand-purple w-5 text-center"></i> ${title}</span>
+                        <i class="fas fa-chevron-down transition-transform group-open:rotate-180 text-light-muted dark:text-dark-muted"></i>
+                    </summary>
+                    <div class="p-5 space-y-4 border-t border-light-border dark:border-dark-border">
+                        ${content}
+                    </div>
+                </details>
+            `;
+        }
+
+        function renderColorSwatch(label, pathKey, value) {
+            return `
+                <div>
+                    <label class="block text-xs font-semibold text-light-muted dark:text-dark-muted mb-1">${label}</label>
+                    <div class="flex items-center gap-3">
+                        <div class="relative w-10 h-10 rounded-lg overflow-hidden border border-light-border dark:border-dark-border shadow-sm shrink-0">
+                            <input type="color" value="${value}" class="absolute -inset-2 w-16 h-16 cursor-pointer" oninput="updateColor('${pathKey}', this.value)">
+                        </div>
+                        <input type="text" id="hex_${pathKey}" value="${value.toUpperCase()}" class="form-input font-mono uppercase text-xs" oninput="updateColor('${pathKey}', this.value); this.previousElementSibling.querySelector('input').value = this.value;">
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTextInput(label, objKey, fieldKey, value, isTextarea = false) {
+            const inputHtml = isTextarea 
+                ? `<textarea class="form-input text-sm" rows="3" oninput="updateField('${objKey}', '${fieldKey}', this.value)">${value}</textarea>`
+                : `<input type="text" value="${value}" class="form-input text-sm" oninput="updateField('${objKey}', '${fieldKey}', this.value)">`;
+            return `
+                <div>
+                    <label class="block text-xs font-semibold text-light-muted dark:text-dark-muted mb-1">${label}</label>
+                    ${inputHtml}
+                </div>
+            `;
+        }
+
+        function renderForm() {
+            let html = "";
+
+            // 1. CORES
+            let colorContent = `
+                <div class="grid grid-cols-2 gap-4">
+                    ${renderColorSwatch('Fundo Principal', 'cor_fundo', appData.configuracao.paleta.cor_fundo)}
+                    ${renderColorSwatch('Fundo Cards', 'cor_card', appData.configuracao.paleta.cor_card)}
+                    ${renderColorSwatch('Destaque Ouro', 'cor_destaque', appData.configuracao.paleta.cor_destaque)}
+                    ${renderColorSwatch('Cor Texto', 'cor_texto', appData.configuracao.paleta.cor_texto)}
+                </div>
+            `;
+            html += createAccordion('Identidade Visual', 'fas fa-palette', colorContent, true);
+
+            // 2. PROFISSIONAL
+            let profContent = `
+                ${renderTextInput('Nome Médico', 'profissional', 'nome_completo', appData.profissional.nome_completo)}
+                ${renderTextInput('Especialidade', 'profissional', 'especialidade', appData.profissional.especialidade)}
+                <div class="grid grid-cols-2 gap-4">
+                    ${renderTextInput('CRM / RQE', 'profissional', 'crm', appData.profissional.crm)}
+                    ${renderTextInput('Nome do Local', 'profissional', 'local_nome', appData.profissional.local_nome)}
+                </div>
+                ${renderTextInput('Frase Impacto', 'profissional', 'frase_impacto', appData.profissional.frase_impacto, true)}
+                ${renderTextInput('Biografia', 'profissional', 'bio_completa', appData.profissional.bio_completa, true)}
+            `;
+            html += createAccordion('Dados do Médico', 'fas fa-user-md', profContent);
+
+            // 3. HERO
+            let heroContent = `
+                ${renderTextInput('Headline', 'hero', 'headline', appData.hero.headline, true)}
+                ${renderTextInput('Subheadline', 'hero', 'subheadline', appData.hero.subheadline, true)}
+            `;
+            html += createAccordion('Início (Hero)', 'fas fa-image', heroContent);
+
+            // 4. SERVIÇOS
+            let servContent = `<div id="services-list" class="space-y-4">`;
+            appData.servicos.forEach((srv, index) => {
+                servContent += `
+                    <div class="bg-light-bg dark:bg-[#09090b] p-4 rounded-lg border border-light-border dark:border-dark-border relative group">
+                        <button onclick="removeService(${index})" class="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"><i class="fas fa-trash text-xs"></i></button>
+                        <input type="text" value="${srv.titulo}" class="w-full bg-transparent font-bold text-sm mb-2 outline-none border-b border-transparent focus:border-brand-purple" oninput="updateService(${index}, 'titulo', this.value)">
+                        <textarea class="w-full bg-transparent text-xs text-light-muted dark:text-dark-muted outline-none resize-none" rows="2" oninput="updateService(${index}, 'descricao', this.value)">${srv.descricao}</textarea>
+                    </div>
+                `;
+            });
+            servContent += `</div><button onclick="addService()" class="w-full py-2 border border-dashed border-brand-purple/50 text-brand-purple rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-brand-purple/10 transition-colors mt-2">+ Serviço</button>`;
+            html += createAccordion('Procedimentos', 'fas fa-list', servContent);
+
+            // 5. PROVA SOCIAL
+            let provaContent = `
+                ${renderTextInput('Depoimento', 'prova_social', 'depoimento_texto', appData.prova_social.depoimento_texto, true)}
+                <div class="grid grid-cols-2 gap-4">
+                    ${renderTextInput('Autor', 'prova_social', 'autor', appData.prova_social.autor)}
+                    ${renderTextInput('Procedimento', 'prova_social', 'detalhe_procedimento', appData.prova_social.detalhe_procedimento)}
+                </div>
+            `;
+            html += createAccordion('Depoimento', 'fas fa-quote-right', provaContent);
+
+            // 6. CONTATO
+            let contatoContent = `
+                ${renderTextInput('Link WhatsApp', 'contato', 'whatsapp_link', appData.contato.whatsapp_link)}
+                ${renderTextInput('Endereço', 'contato', 'endereco_completo', appData.contato.endereco_completo)}
+            `;
+            html += createAccordion('Contato & Mapa', 'fas fa-map-marker-alt', contatoContent);
+
+            dynamicFormContainer.innerHTML = html;
+        }
+
+        // FUNÇÕES DE ATUALIZAÇÃO
+        window.updateColor = function(key, val) {
+            appData.configuracao.paleta[key] = val;
+            let hexInput = document.getElementById(`hex_${key}`);
+            if(hexInput) hexInput.value = val.toUpperCase();
+            syncJsonInput(); debounceRender();
+        }
+        window.updateField = function(objKey, fieldKey, val) {
+            appData[objKey][fieldKey] = val;
+            syncJsonInput(); debounceRender();
+        }
+        window.updateService = function(index, key, val) {
+            appData.servicos[index][key] = val;
+            syncJsonInput(); debounceRender();
+        }
+        window.addService = function() {
+            appData.servicos.push({ titulo: "Novo Serviço", descricao: "Descrição...", imagem_url: "" });
+            renderForm(); syncJsonInput(); debounceRender();
+        }
+        window.removeService = function(index) {
+            appData.servicos.splice(index, 1);
+            renderForm(); syncJsonInput(); debounceRender();
+        }
+
+        function syncJsonInput() { jsonInput.value = JSON.stringify(appData, null, 4); }
+
+        btnSyncToForm.addEventListener('click', () => {
+            try {
+                let clean = jsonInput.value.trim();
+                if (clean.startsWith('```json')) clean = clean.replace(/```json/gi, '');
+                if (clean.endsWith('```')) clean = clean.replace(/```/g, '');
+                clean = clean.replace(/[\u00A0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]/g, ' ').trim();
+                
+                appData = JSON.parse(clean);
+                renderForm();
+                jsonInput.value = JSON.stringify(appData, null, 4);
+                compileTemplate();
+                showToast('Painel Preenchido com Sucesso!');
+                document.querySelector('[data-target="tab-form"]').click();
+            } catch (e) {
+                showToast('Erro no JSON. Verifique aspas e chaves.', true);
+            }
+        });
+
+        // O Motor de Compilação
+        let htmlGerado = "";
+        function compileTemplate() {
+            try {
+                const source = document.getElementById('master-template').innerHTML;
+                const template = Handlebars.compile(source);
+                htmlGerado = template(appData);
+                previewFrame.srcdoc = htmlGerado;
+                htmlCodeView.value = htmlGerado;
+            } catch (error) { console.error(error); }
+        }
+
+        btnGerar.addEventListener('click', () => { compileTemplate(); showToast('Forçado Atualizado'); });
+
+        btnCopyCode.addEventListener('click', () => {
+            if(!htmlGerado) return;
+            htmlCodeView.select(); document.execCommand('copy'); window.getSelection().removeAllRanges();
+            const original = btnCopyCode.innerHTML;
+            btnCopyCode.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            btnCopyCode.classList.replace('bg-brand-purple', 'bg-green-600');
+            setTimeout(() => { btnCopyCode.innerHTML = original; btnCopyCode.classList.replace('bg-green-600', 'bg-brand-purple'); }, 2000);
+        });
+
+        btnBaixar.addEventListener('click', () => {
+            if (!htmlGerado) return;
+            let nomeArquivo = "nomo_site.html";
+            if(appData.profissional && appData.profissional.nome_completo) {
+                nomeArquivo = appData.profissional.nome_completo.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') + ".html";
+            }
+            const blob = new Blob([htmlGerado], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = nomeArquivo;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Download iniciado!');
+        });
+
+        function setupTabs(btnSelector, paneSelector, activeClass) {
+            const btns = document.querySelectorAll(btnSelector);
+            const panes = document.querySelectorAll(paneSelector);
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => { b.classList.remove('active', activeClass, 'text-brand-purple'); b.classList.add('border-transparent', 'text-light-muted', 'dark:text-dark-muted'); });
+                    panes.forEach(p => { p.classList.add('hidden'); p.classList.remove('flex'); });
+                    btn.classList.add('active', activeClass, 'text-brand-purple'); btn.classList.remove('border-transparent', 'text-light-muted', 'dark:text-dark-muted');
+                    document.getElementById(btn.dataset.target).classList.remove('hidden'); document.getElementById(btn.dataset.target).classList.add('flex');
+                });
+            });
+        }
+        setupTabs('.tab-left', '.tab-pane-left', 'border-brand-purple');
+        setupTabs('.tab-right', '.tab-pane-right', 'border-brand-purple');
+
+        btnTheme.addEventListener('click', () => htmlElement.classList.toggle('dark'));
+        btnMobile.addEventListener('click', () => { previewWrapper.style.width = '375px'; btnMobile.classList.replace('text-light-muted', 'text-brand-purple'); btnMobile.classList.replace('dark:text-dark-muted', 'bg-light-border/50'); btnDesktop.classList.replace('text-brand-purple', 'text-light-muted'); btnDesktop.classList.remove('bg-light-border/50', 'dark:bg-dark-border/50'); });
+        btnDesktop.addEventListener('click', () => { previewWrapper.style.width = '100%'; btnDesktop.classList.replace('text-light-muted', 'text-brand-purple'); btnDesktop.classList.add('bg-light-border/50', 'dark:bg-dark-border/50'); btnMobile.classList.replace('text-brand-purple', 'text-light-muted'); btnMobile.classList.remove('bg-light-border/50', 'dark:bg-dark-border/50'); });
+
+        renderForm(); setTimeout(compileTemplate, 300);
+    </script>
+</body>
+</html>
