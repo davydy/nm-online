@@ -177,7 +177,7 @@
             border-left: 3px solid #a855f7;
         }
 
-        /* Vue Transitions */
+        /* Vue Transitions Fixes */
         .dropdown-enter-active, .dropdown-leave-active { transition: all 0.2s ease-out; }
         .dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-5px); }
 
@@ -268,6 +268,12 @@
 
                         <div class="pt-4 pb-2"><div class="h-px bg-white/5 mx-2"></div></div>
 
+                        <!-- Links Externos -->
+                        <a href="nomo_engine.html" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-cyan-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
+                            <i class="ph ph-cpu text-xl group-hover:rotate-12 transition-transform"></i>
+                            <span class="hidden lg:block ml-3 font-medium text-sm">Nomo Engine</span>
+                        </a>
+
                         <a href="editsite.html" target="_blank" rel="noopener noreferrer" class="w-full flex items-center px-3 py-3 text-slate-400 hover:text-orange-400 rounded-xl group nav-item-fluid mt-2 cursor-pointer relative z-50">
                             <i class="ph ph-wrench text-xl group-hover:rotate-12 transition-transform"></i>
                             <span class="hidden lg:block ml-3 font-medium text-sm">Editor Site</span>
@@ -279,6 +285,7 @@
                         </a>
 
                         <div class="mt-4 pt-4 border-t border-white/5">
+                            <!-- Botão Arquivados -->
                             <button @click="currentView = 'archived'" class="w-full flex items-center px-3 py-3 rounded-xl group nav-item-fluid text-slate-600 hover:text-slate-400" :class="{'bg-white/5 text-slate-300': currentView === 'archived'}">
                                 <i class="ph ph-archive-box text-xl"></i>
                                 <span class="hidden lg:block ml-3 font-medium text-sm">Arquivo Morto</span>
@@ -388,58 +395,64 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-white/5">
-                                    <tr v-if="loading" v-for="n in 5" :key="'loading-'+n" class="animate-pulse">
-                                        <td class="px-6 py-4"><div class="h-4 w-32 bg-white/5 rounded"></div></td>
-                                        <td class="px-6 py-4"><div class="h-6 w-24 bg-white/5 rounded-full"></div></td>
-                                        <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
-                                        <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
-                                        <td class="px-6 py-4"></td>
-                                    </tr>
-                                    <tr v-else v-for="lead in limitedLeads" :key="lead._row" @click="openDrawer(lead)" class="group hover:bg-nomo-accent/5 cursor-pointer transition-colors">
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center">
-                                                <div class="w-10 h-10 rounded-lg bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                                                    <img v-if="lead.img && lead.img.startsWith('http')" :src="lead.img" class="w-full h-full object-cover">
-                                                    <span v-else class="text-xs font-bold text-nomo-accent">{{ lead['NOME EMPRESA']?.charAt(0) || 'N' }}</span>
+                                    
+                                    <template v-if="loading">
+                                        <tr v-for="n in 5" :key="'loading-'+n" class="animate-pulse">
+                                            <td class="px-6 py-4"><div class="h-4 w-32 bg-white/5 rounded"></div></td>
+                                            <td class="px-6 py-4"><div class="h-6 w-24 bg-white/5 rounded-full"></div></td>
+                                            <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
+                                            <td class="px-6 py-4"><div class="h-4 w-20 bg-white/5 rounded"></div></td>
+                                            <td class="px-6 py-4"></td>
+                                        </tr>
+                                    </template>
+                                    
+                                    <template v-else>
+                                        <tr v-for="lead in limitedLeads" :key="lead._row" @click="openDrawer(lead)" class="group hover:bg-nomo-accent/5 cursor-pointer transition-colors">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center">
+                                                    <div class="w-10 h-10 rounded-lg bg-black border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                        <img v-if="lead.img && lead.img.startsWith('http')" :src="lead.img" class="w-full h-full object-cover">
+                                                        <span v-else class="text-xs font-bold text-nomo-accent">{{ lead['NOME EMPRESA']?.charAt(0) || 'N' }}</span>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-semibold text-white">{{ lead['NOME EMPRESA'] }}</div>
+                                                        <div class="text-[10px] text-slate-500 uppercase">{{ lead['DATA'] }}</div>
+                                                    </div>
                                                 </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-semibold text-white">{{ lead['NOME EMPRESA'] }}</div>
-                                                    <div class="text-[10px] text-slate-500 uppercase">{{ lead['DATA'] }}</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex flex-col gap-2">
+                                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border w-fit" :class="getStatusStyle(lead['STATUS WHATSAPP'])">
+                                                        {{ lead['STATUS WHATSAPP'] || 'A Contactar' }}
+                                                    </div>
+                                                    <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                        <div class="h-full rounded-full transition-all duration-1000" :class="getProgressColor(lead['STATUS WHATSAPP'])" :style="{ width: getProgress(lead['STATUS WHATSAPP']) + '%' }"></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex flex-col gap-2">
-                                                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border w-fit" :class="getStatusStyle(lead['STATUS WHATSAPP'])">
-                                                    {{ lead['STATUS WHATSAPP'] || 'A Contactar' }}
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex flex-col gap-1.5">
+                                                    <span v-if="getSiteStatus(lead['STATUS DEV'])" class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded w-fit border border-blue-500/30 flex items-center gap-1">
+                                                        <i class="ph ph-laptop"></i>{{ getSiteStatus(lead['STATUS DEV']) }}
+                                                    </span>
+                                                    <span v-if="getVideoStatus(lead['STATUS DEV'])" class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded w-fit border border-purple-500/30 flex items-center gap-1">
+                                                        <i class="ph ph-film-strip"></i>{{ getVideoStatus(lead['STATUS DEV']) }}
+                                                    </span>
+                                                    <span v-if="!getSiteStatus(lead['STATUS DEV']) && !getVideoStatus(lead['STATUS DEV'])" class="text-[10px] text-slate-500 flex items-center gap-1">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Pendente
+                                                    </span>
                                                 </div>
-                                                <div class="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                                    <div class="h-full rounded-full transition-all duration-1000" :class="getProgressColor(lead['STATUS WHATSAPP'])" :style="{ width: getProgress(lead['STATUS WHATSAPP']) + '%' }"></div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex flex-col gap-1.5">
-                                                <span v-if="getSiteStatus(lead['STATUS DEV'])" class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded w-fit border border-blue-500/30 flex items-center gap-1">
-                                                    <i class="ph ph-laptop"></i>{{ getSiteStatus(lead['STATUS DEV']) }}
-                                                </span>
-                                                <span v-if="getVideoStatus(lead['STATUS DEV'])" class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded w-fit border border-purple-500/30 flex items-center gap-1">
-                                                    <i class="ph ph-film-strip"></i>{{ getVideoStatus(lead['STATUS DEV']) }}
-                                                </span>
-                                                <span v-if="!getSiteStatus(lead['STATUS DEV']) && !getVideoStatus(lead['STATUS DEV'])" class="text-[10px] text-slate-500 flex items-center gap-1">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Pendente
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-xs text-slate-400">{{ lead['LOCAL'] || '-' }}</td>
-                                        <td class="px-6 py-4 text-right flex items-center justify-end h-full">
-                                            <a v-if="lead['LINK VÍDEO PRÉVIA']" :href="lead['LINK VÍDEO PRÉVIA']" target="_blank" @click.stop class="inline-flex items-center gap-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors mr-2">
-                                                <i class="ph ph-play text-sm"></i> Prévia
-                                            </a>
-                                            <a v-if="currentView === 'enviar' && getWhatsappLink(lead)" :href="getWhatsappLink(lead)" target="_blank" @click.stop class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20"><i class="ph ph-whatsapp-logo text-lg"></i> Enviar</a>
-                                            <i class="ph ph-caret-right text-slate-600 group-hover:text-white ml-2"></i>
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td class="px-6 py-4 text-xs text-slate-400">{{ lead['LOCAL'] || '-' }}</td>
+                                            <td class="px-6 py-4 text-right flex items-center justify-end h-full">
+                                                <a v-if="lead['LINK VÍDEO PRÉVIA']" :href="lead['LINK VÍDEO PRÉVIA']" target="_blank" @click.stop class="inline-flex items-center gap-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors mr-2">
+                                                    <i class="ph ph-play text-sm"></i> Prévia
+                                                </a>
+                                                <a v-if="currentView === 'enviar' && getWhatsappLink(lead)" :href="getWhatsappLink(lead)" target="_blank" @click.stop class="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors mr-3 shadow-lg shadow-green-500/20"><i class="ph ph-whatsapp-logo text-lg"></i> Enviar</a>
+                                                <i class="ph ph-caret-right text-slate-600 group-hover:text-white ml-2"></i>
+                                            </td>
+                                        </tr>
+                                    </template>
                                 </tbody>
                             </table>
                             
@@ -462,105 +475,105 @@
             </transition>
 
             <transition name="slide-in" @after-leave="selectedLead = null">
-                <div v-if="showDrawer && selectedLead" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
-                    <div class="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-xl">
-                        <div>
-                            <h2 class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                                <span class="text-nomo-accent">#</span> {{ selectedLead['NOME EMPRESA'] }}
-                            </h2>
-                            <div class="flex gap-2 mt-3">
-                                <a v-if="getWhatsappLink(selectedLead)" :href="getWhatsappLink(selectedLead)" target="_blank" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20 text-xs font-bold transition-all"><i class="ph ph-whatsapp-logo text-lg"></i> Chamar</a>
-                                <a v-if="selectedLead['LINK MAPS']" :href="selectedLead['LINK MAPS']" target="_blank" class="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/20 text-xs font-bold transition-all"><i class="ph ph-map-pin text-lg"></i> Mapa</a>
-                                <a v-if="selectedLead['LINK VÍDEO PRÉVIA']" :href="selectedLead['LINK VÍDEO PRÉVIA']" target="_blank" class="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-3 py-1.5 rounded-lg border border-purple-500/20 text-xs font-bold transition-all"><i class="ph ph-play text-lg"></i> Vídeo</a>
+                <div v-show="showDrawer" class="fixed inset-y-0 right-0 w-full md:w-[600px] bg-[#0c0814] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 flex flex-col">
+                    
+                    <div v-if="selectedLead" class="h-full flex flex-col">
+                        <div class="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-black/20 backdrop-blur-xl">
+                            <div>
+                                <h2 class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                                    <span class="text-nomo-accent">#</span> {{ selectedLead['NOME EMPRESA'] }}
+                                </h2>
+                                <div class="flex gap-2 mt-3">
+                                    <a v-if="getWhatsappLink(selectedLead)" :href="getWhatsappLink(selectedLead)" target="_blank" class="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-1.5 rounded-lg border border-green-500/20 text-xs font-bold transition-all"><i class="ph ph-whatsapp-logo text-lg"></i> Chamar</a>
+                                    <a v-if="selectedLead['LINK MAPS']" :href="selectedLead['LINK MAPS']" target="_blank" class="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/20 text-xs font-bold transition-all"><i class="ph ph-map-pin text-lg"></i> Mapa</a>
+                                    <a v-if="selectedLead['LINK VÍDEO PRÉVIA']" :href="selectedLead['LINK VÍDEO PRÉVIA']" target="_blank" class="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-3 py-1.5 rounded-lg border border-purple-500/20 text-xs font-bold transition-all"><i class="ph ph-play text-lg"></i> Vídeo</a>
+                                </div>
                             </div>
+                            <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all"><i class="ph ph-x text-lg"></i></button>
                         </div>
-                        <button @click="closeDrawer" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all"><i class="ph ph-x text-lg"></i></button>
-                    </div>
 
-                    <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                        <!-- OSINT -->
-                        <section class="bg-gradient-to-br from-indigo-900/10 to-nomo-surface border border-indigo-500/20 p-5 rounded-2xl">
-                            <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-detective text-lg"></i> Inteligência & Redes</h3>
-                            <div class="grid grid-cols-3 gap-2 mb-4">
-                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'instagram')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/50 rounded-xl transition-all group"><i class="ph ph-instagram-logo text-lg text-slate-400 group-hover:text-pink-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Instagram</span></button>
-                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'linkedin')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 rounded-xl transition-all group"><i class="ph ph-linkedin-logo text-lg text-slate-400 group-hover:text-blue-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">LinkedIn</span></button>
-                                <button @click="openSearch(selectedLead['NOME EMPRESA'], 'google')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 rounded-xl transition-all group"><i class="ph ph-google-logo text-lg text-slate-400 group-hover:text-green-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Geral</span></button>
-                            </div>
-                            <div class="flex gap-2">
-                                <input v-model="selectedLead['WEBSITE ATUAL']" type="text" placeholder="Cole o link social..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none">
-                                <a v-if="selectedLead['WEBSITE ATUAL']" :href="selectedLead['WEBSITE ATUAL']" target="_blank" class="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all"><i class="ph ph-arrow-square-out text-lg"></i></a>
-                            </div>
-                        </section>
-
-                        <!-- COMERCIAL -->
-                        <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
-                            <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-lg"></i> Pipeline Comercial</h3>
-                            
-                            <div class="mb-5">
-                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status WhatsApp</label>
-                                <div class="flex flex-wrap gap-2">
-                                    <button v-for="opt in funnelOptions" :key="opt" @click="selectedLead['STATUS WHATSAPP'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium truncate" :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                        <div class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                            <!-- OSINT -->
+                            <section class="bg-gradient-to-br from-indigo-900/10 to-nomo-surface border border-indigo-500/20 p-5 rounded-2xl">
+                                <h3 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-detective text-lg"></i> Inteligência & Redes</h3>
+                                <div class="grid grid-cols-3 gap-2 mb-4">
+                                    <button @click="openSearch(selectedLead['NOME EMPRESA'], 'instagram')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-pink-600/20 border border-white/10 hover:border-pink-500/50 rounded-xl transition-all group"><i class="ph ph-instagram-logo text-lg text-slate-400 group-hover:text-pink-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Instagram</span></button>
+                                    <button @click="openSearch(selectedLead['NOME EMPRESA'], 'linkedin')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/50 rounded-xl transition-all group"><i class="ph ph-linkedin-logo text-lg text-slate-400 group-hover:text-blue-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">LinkedIn</span></button>
+                                    <button @click="openSearch(selectedLead['NOME EMPRESA'], 'google')" class="flex flex-col items-center p-2 bg-white/5 hover:bg-green-600/20 border border-white/10 hover:border-green-500/50 rounded-xl transition-all group"><i class="ph ph-google-logo text-lg text-slate-400 group-hover:text-green-400"></i><span class="text-[9px] mt-1 text-slate-400 group-hover:text-white">Geral</span></button>
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label>
-                                    <div class="flex flex-col gap-2">
-                                        <button v-for="opt in callOptions" :key="opt" @click="selectedLead['STATUS LIGAÇÃO'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate" :class="selectedLead['STATUS LIGAÇÃO'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label>
-                                    <div class="flex flex-col gap-2">
-                                        <button v-for="opt in priorityOptions" :key="opt" @click="selectedLead['PRIORIDADE (DEV)'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate" :class="selectedLead['PRIORIDADE (DEV)'] === opt ? 'bg-orange-500/20 border-orange-500 text-orange-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                        
-                        <!-- PRODUÇÃO -->
-                        <div class="grid grid-cols-1 gap-4">
-                            <section class="bg-blue-900/10 p-5 rounded-2xl border border-blue-500/20">
-                                <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-laptop text-lg"></i> Desenvolvimento</h3>
-                                <div class="flex flex-wrap gap-2">
-                                    <button v-for="opt in siteOptions" :key="opt" @click="updateDevStatus(opt, 'site')" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="(selectedLead['STATUS DEV']||'').includes(opt) ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
-                                </div>
-                            </section>
-                            <section class="bg-purple-900/10 p-5 rounded-2xl border border-purple-500/20">
-                                <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-film-strip text-lg"></i> Editor & Vídeo</h3>
-                                <div class="flex flex-wrap gap-2 mb-4"><button v-for="opt in videoOptions" :key="opt" @click="updateDevStatus(opt, 'video')" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="(selectedLead['STATUS DEV']||'').includes(opt) ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
-                                
                                 <div class="flex gap-2">
-                                    <div class="relative group flex-1">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="ph ph-google-drive-logo text-slate-500 group-focus-within:text-purple-400"></i>
-                                        </div>
-                                        <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" placeholder="Cole o link do Drive da prévia..." class="w-full pl-10 bg-black/40 border border-white/10 rounded-lg py-2.5 pr-3 text-xs text-white focus:border-purple-500 outline-none transition-all">
-                                    </div>
-                                    <a v-if="selectedLead['LINK VÍDEO PRÉVIA']" :href="selectedLead['LINK VÍDEO PRÉVIA']" target="_blank" class="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-lg shadow-lg shadow-purple-500/30 transition-all">
-                                        <i class="ph ph-play text-lg"></i>
-                                    </a>
+                                    <input v-model="selectedLead['WEBSITE ATUAL']" type="text" placeholder="Cole o link social..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none">
+                                    <a v-if="selectedLead['WEBSITE ATUAL']" :href="selectedLead['WEBSITE ATUAL']" target="_blank" class="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all"><i class="ph ph-arrow-square-out text-lg"></i></a>
                                 </div>
                             </section>
-                        </div>
-                        
-                        <!-- DADOS -->
-                        <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4"><i class="ph ph-address-book"></i> Dados de Contato</h3>
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Telefone</label><input v-model="selectedLead['TEL. NUMÉRICO']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></div>
-                                <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Google Maps</label><input v-model="selectedLead['LINK MAPS']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></div>
-                            </div>
-                            <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Observações</label>
-                            <textarea v-model="selectedLead['OBSERVAÇÕES']" rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></textarea>
-                        </section>
-                    </div>
 
-                    <div class="p-6 border-t border-white/10 bg-black/40 backdrop-blur-xl">
-                        <button @click="saveLead" :disabled="saving" class="w-full py-4 bg-gradient-to-r from-nomo-accent to-purple-700 hover:from-purple-500 hover:to-nomo-accent text-white rounded-xl font-bold shadow-neon transform transition hover:scale-[1.02] active:scale-[0.98] flex justify-center items-center gap-2 disabled:opacity-50">
-                            <i v-if="saving" class="ph ph-spinner animate-spin text-xl"></i>
-                            <span v-else class="tracking-widest uppercase text-sm">Salvar Alterações</span>
-                        </button>
+                            <!-- COMERCIAL -->
+                            <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                                <h3 class="text-xs font-bold text-nomo-cyan uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-lg"></i> Pipeline Comercial</h3>
+                                
+                                <div class="mb-5">
+                                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status WhatsApp</label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button v-for="opt in funnelOptions" :key="opt" @click="selectedLead['STATUS WHATSAPP'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium truncate" :class="selectedLead['STATUS WHATSAPP'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Status Ligação</label>
+                                        <div class="flex flex-col gap-2">
+                                            <button v-for="opt in callOptions" :key="opt" @click="selectedLead['STATUS LIGAÇÃO'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate" :class="selectedLead['STATUS LIGAÇÃO'] === opt ? 'active' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] uppercase text-slate-500 font-bold mb-2 block">Prioridade</label>
+                                        <div class="flex flex-col gap-2">
+                                            <button v-for="opt in priorityOptions" :key="opt" @click="selectedLead['PRIORIDADE (DEV)'] = opt" class="select-chip px-3 py-2 rounded-lg text-xs font-medium text-left truncate" :class="selectedLead['PRIORIDADE (DEV)'] === opt ? 'bg-orange-500/20 border-orange-500 text-orange-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            
+                            <!-- PRODUÇÃO -->
+                            <div class="grid grid-cols-1 gap-4">
+                                <section class="bg-blue-900/10 p-5 rounded-2xl border border-blue-500/20">
+                                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-laptop text-lg"></i> Desenvolvimento</h3>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button v-for="opt in siteOptions" :key="opt" @click="updateDevStatus(opt, 'site')" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="(selectedLead['STATUS DEV']||'').includes(opt) ? 'bg-blue-500/20 border-blue-500 text-blue-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button>
+                                    </div>
+                                </section>
+                                <section class="bg-purple-900/10 p-5 rounded-2xl border border-purple-500/20">
+                                    <h3 class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph ph-film-strip text-lg"></i> Editor & Vídeo</h3>
+                                    <div class="flex flex-wrap gap-2 mb-4"><button v-for="opt in videoOptions" :key="opt" @click="updateDevStatus(opt, 'video')" class="select-chip px-3 py-2 rounded-lg text-xs font-medium" :class="(selectedLead['STATUS DEV']||'').includes(opt) ? 'bg-purple-500/20 border-purple-500 text-purple-200' : 'bg-black/20 text-slate-400'">{{ opt }}</button></div>
+                                    
+                                    <div class="flex gap-2">
+                                        <div class="relative group flex-1">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="ph ph-google-drive-logo text-slate-500 group-focus-within:text-purple-400"></i>
+                                            </div>
+                                            <input v-model="selectedLead['LINK VÍDEO PRÉVIA']" type="text" placeholder="Cole o link do Drive da prévia..." class="w-full pl-10 bg-black/40 border border-white/10 rounded-lg py-2.5 pr-3 text-xs text-white focus:border-purple-500 outline-none transition-all">
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            
+                            <!-- DADOS -->
+                            <section class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4"><i class="ph ph-address-book"></i> Dados de Contato</h3>
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Telefone</label><input v-model="selectedLead['TEL. NUMÉRICO']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></div>
+                                    <div><label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Google Maps</label><input v-model="selectedLead['LINK MAPS']" type="text" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></div>
+                                </div>
+                                <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Observações</label>
+                                <textarea v-model="selectedLead['OBSERVAÇÕES']" rows="3" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none"></textarea>
+                            </section>
+                        </div>
+
+                        <div class="p-6 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+                            <button @click="saveLead" :disabled="saving" class="w-full py-4 bg-gradient-to-r from-nomo-accent to-purple-700 hover:from-purple-500 hover:to-nomo-accent text-white rounded-xl font-bold shadow-neon transform transition hover:scale-[1.02] active:scale-[0.98] flex justify-center items-center gap-2 disabled:opacity-50">
+                                <i v-if="saving" class="ph ph-spinner animate-spin text-xl"></i>
+                                <span v-else class="tracking-widest uppercase text-sm">Salvar Alterações</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </transition>
@@ -597,7 +610,7 @@
                     loginError: '',
                     currentUser: '',
                     loginForm: { user: '', pass: '' },
-                    validUsers: { 'admin': '2607', 'lyzz': '2607', 'dvyd': '2607' },
+                    validUsers: { 'admin': '2607', 'jean': '1104', 'lyzz': '2607', 'dvyd': '2607' },
 
                     currentView: 'geral', 
                     leads: [],
@@ -649,6 +662,9 @@
                     const u = this.currentUser.toLowerCase();
                     if (u === 'admin' || u === 'lyzz' || u === 'dvyd') {
                         return 'Bem-vindo(a), CEO';
+                    }
+                    if (u === 'jean') {
+                        return 'Bem-vindo, Jean';
                     }
                     return 'Usuário Nomo';
                 },
@@ -741,6 +757,7 @@
             },
             methods: {
                 updateDevStatus(opt, type) {
+                    if (!this.selectedLead) return;
                     let current = this.selectedLead['STATUS DEV'] || '';
                     let sitePart = '';
                     let videoPart = '';
@@ -810,6 +827,9 @@
                 },
                 closeDrawer() { 
                     this.showDrawer = false; 
+                    setTimeout(() => {
+                        this.selectedLead = null;
+                    }, 300);
                 },
                 async saveLead() {
                     this.saving = true;
